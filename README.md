@@ -8,6 +8,7 @@ Please describe your Startup Campus final project here. You may should your <b>m
 
 ## Contributor
 | Full Name | Affiliation | Email | LinkedIn | Role |
+| ... | ... | ... | ... | ... |
 | Mochamad Faisal Akbar | ... | faisalzogg022@gmail.com | www.linkedin.com/in/m-faisal-akbar | Team Lead |
 | Firman Sanjaya | ... | firmansanjaya2301@gmail.com | [link](https://www.linkedin.com/in/firman-sanjaya-ab5001332) | Team Member |
 | ... | ... | ... | ... |Team Member |
