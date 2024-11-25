@@ -1,5 +1,5 @@
 # Automated Nutritional Analysis: Object Detection for Balanced Meal Evaluation According to 4 Sehat 5 Sempurna
-- Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow
+### Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow
 
 ## Project Description
 Mendeteksi tingkat nutrisi dan gizi pada sepiring makanan menggunakan Object Detection dan berpatok pada 4 Sehat 5 Sempurna. Kami membangun program ini dengan menggunakan library TensorFlow dan menggunakan algoritma CNN.
