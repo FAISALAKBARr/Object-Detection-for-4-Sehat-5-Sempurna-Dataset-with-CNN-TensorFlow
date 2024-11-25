@@ -1,5 +1,5 @@
 # Automated Nutritional Analysis: Object Detection for Balanced Meal Evaluation According to 4 Sehat 5 Sempurna
-# Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow
+- Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow
 
 ## Project Description
 Mendeteksi tingkat nutrisi dan gizi pada sepiring makanan menggunakan Object Detection dan berpatok pada 4 Sehat 5 Sempurna. Kami membangun program ini dengan menggunakan library TensorFlow dan menggunakan algoritma CNN.
@@ -14,6 +14,8 @@ Please describe your Startup Campus final project here. You may should your <b>m
 | Nasywa Raichanah | Universitas Sebelas Maret | nasywaraichanah15.2@gmail.com | [link](https://www.linkedin.com/in/nasywaraichanah/) |Team Member |
 | ... | ... | ... | ... | ... |
 | ... | ... | ... | ... | ... |
+| ... | ... | ... | ... | ... |
+| ... | ... | ... | ... | ... |
 | Nicholas Dominic | Startup Campus, AI Track | nic.dominic@icloud.com | [link](https://linkedin.com/in/nicholas-dominic) | Supervisor |
 
 ## Setup
@@ -26,7 +28,6 @@ Please describe your Startup Campus final project here. You may should your <b>m
 - ...
 
 ### Environment
-| | |
 | --- | --- |
 | CPU | 12th Gen Intel(R) Core(TM) i7-1260P (16 CPUs), ~2.1GHz |
 | GPU | Laptop: Intel(R) Iris(R) Xe Graphics , Kaggle: Nvidia P100 (x1) |
