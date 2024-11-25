@@ -10,7 +10,7 @@ Please describe your Startup Campus final project here. You may should your <b>m
 | Full Name | Affiliation | Email | LinkedIn | Role |
 | --- | --- | --- | --- | --- |
 | Mochamad Faisal Akbar | Universitas Sebelas Maret | faisalzogg022@gmail.com | [link](https://www.linkedin.com/in/m-faisal-akbar) | Team Lead |
-| Firman Sanjaya | ... | firmansanjaya2301@gmail.com | [link](https://www.linkedin.com/in/firman-sanjaya-ab5001332) | Team Member |
+| Firman Sanjaya | Politeknik Harapan Bersama | firmansanjaya2301@gmail.com | [link](https://www.linkedin.com/in/firman-sanjaya-ab5001332) | Team Member |
 | Nasywa Raichanah | Universitas Sebelas Maret | nasywaraichanah15.2@gmail.com | [link](https://www.linkedin.com/in/nasywaraichanah/) |Team Member |
 | ... | ... | ... | ... | ... |
 | ... | ... | ... | ... | ... |
