@@ -30,7 +30,7 @@ st.markdown("""
     .stButton>button {
         width: 100%;
         margin-top: 20px;
-        background-color: #9ad5fc;
+        background-color: #0245d6;
         color: white;
     }
     .prediction-box {
@@ -128,73 +128,82 @@ def preprocess_image(image, target_size=(224, 224)):
 
 def predict_image(image):
     """
-    Make prediction with multiple object detection and draw bounding boxes
+    Make prediction with improved multiple object detection and draw bounding boxes
     """
     try:
         processed_image, original_image = preprocess_image(image)
         predictions = model.predict(processed_image, verbose=0)
         
-        # Get image dimensions
         height, width = original_image.shape[:2]
         output_image = original_image.copy()
         
-        # Threshold untuk confidence score
-        CONFIDENCE_THRESHOLD = 0.5
+        # Lower threshold untuk mendeteksi lebih banyak objek
+        CONFIDENCE_THRESHOLD = 0.3
+        
+        # Sliding window parameters
+        WINDOW_SIZES = [(224, 224), (160, 160)]  # Multiple window sizes
+        STRIDE = 112  # Stride untuk sliding window
         
         detected_objects = []
         
-        # Analyze all predictions above threshold
-        for class_idx, confidence in enumerate(predictions[0]):
-            if confidence > CONFIDENCE_THRESHOLD:
-                # Calculate dynamic bounding box size based on confidence
-                box_size = int(min(width, height) * (confidence * 0.5))
-                
-                # Calculate center point
-                center_x = width // 2
-                center_y = height // 2
-                
-                # Calculate box coordinates
-                x1 = max(0, center_x - box_size // 2)
-                y1 = max(0, center_y - box_size // 2)
-                x2 = min(width, center_x + box_size // 2)
-                y2 = min(height, center_y + box_size // 2)
-                
-                # Generate random color for this class
-                color = (
-                    np.random.randint(0, 255),
-                    np.random.randint(0, 255),
-                    np.random.randint(0, 255)
-                )
-                
-                # Draw bounding box
-                cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
-                
-                # Add label with class name and confidence
-                label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
-                label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-                
-                # Ensure label background doesn't go outside image
-                label_y = max(y1, label_size[1] + 10)
-                
-                # Draw label background
-                cv2.rectangle(output_image, 
-                            (x1, label_y - label_size[1] - 10),
-                            (x1 + label_size[0], label_y),
-                            color, -1)
-                
-                # Draw label text
-                cv2.putText(output_image, label,
-                           (x1, label_y - 5),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-                
-                detected_objects.append({
-                    'class': class_names[class_idx],
-                    'confidence': confidence * 100,
-                    'bbox': (x1, y1, x2, y2)
-                })
+        # Implement sliding window detection
+        for window_size in WINDOW_SIZES:
+            for y in range(0, height - window_size[1], STRIDE):
+                for x in range(0, width - window_size[0], STRIDE):
+                    # Extract window
+                    window = original_image[y:y + window_size[1], x:x + window_size[0]]
+                    
+                    # Process window
+                    processed_window, _ = preprocess_image(window)
+                    window_predictions = model.predict(processed_window, verbose=0)[0]
+                    
+                    max_confidence = np.max(window_predictions)
+                    if max_confidence > CONFIDENCE_THRESHOLD:
+                        class_idx = np.argmax(window_predictions)
+                        
+                        # Generate random color for this detection
+                        color = (
+                            np.random.randint(0, 255),
+                            np.random.randint(0, 255),
+                            np.random.randint(0, 255)
+                        )
+                        
+                        # Add detection
+                        detected_objects.append({
+                            'class': class_names[class_idx],
+                            'confidence': float(max_confidence * 100),
+                            'bbox': (x, y, x + window_size[0], y + window_size[1]),
+                            'color': color
+                        })
         
-        # Sort detected objects by confidence
-        detected_objects.sort(key=lambda x: x['confidence'], reverse=True)
+        # Non-maximum suppression to remove overlapping boxes
+        filtered_objects = non_max_suppression(detected_objects)
+        
+        # Draw filtered detections
+        for obj in filtered_objects:
+            x1, y1, x2, y2 = obj['bbox']
+            color = obj['color']
+            
+            # Draw bounding box
+            cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
+            
+            # Add label
+            label = f"{obj['class']}: {obj['confidence']:.1f}%"
+            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+            
+            # Ensure label background doesn't go outside image
+            label_y = max(y1, label_size[1] + 10)
+            
+            # Draw label background
+            cv2.rectangle(output_image, 
+                        (x1, label_y - label_size[1] - 10),
+                        (x1 + label_size[0], label_y),
+                        color, -1)
+            
+            # Draw label text
+            cv2.putText(output_image, label,
+                       (x1, label_y - 5),
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
         
         # Calculate overall probabilities
         all_probabilities = {
@@ -203,20 +212,70 @@ def predict_image(image):
         }
         
         # Get primary class (highest confidence)
-        primary_class = detected_objects[0]['class'] if detected_objects else class_names[np.argmax(predictions[0])]
-        primary_confidence = detected_objects[0]['confidence'] if detected_objects else float(np.max(predictions[0])) * 100
+        primary_class = filtered_objects[0]['class'] if filtered_objects else class_names[np.argmax(predictions[0])]
+        primary_confidence = filtered_objects[0]['confidence'] if filtered_objects else float(np.max(predictions[0])) * 100
         
         return {
             'class': primary_class,
             'confidence': primary_confidence,
             'all_probabilities': all_probabilities,
             'output_image': output_image,
-            'detected_objects': detected_objects
+            'detected_objects': filtered_objects
         }
         
     except Exception as e:
         st.error(f"Error during prediction: {str(e)}")
         return None
+
+def non_max_suppression(detected_objects, iou_threshold=0.3):
+    """
+    Apply non-maximum suppression to remove overlapping boxes
+    """
+    if not detected_objects:
+        return []
+    
+    # Convert to numpy array for easier processing
+    boxes = np.array([[obj['bbox'][0], obj['bbox'][1], 
+                      obj['bbox'][2], obj['bbox'][3], 
+                      obj['confidence']] for obj in detected_objects])
+    
+    # Get coordinates
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 2]
+    y2 = boxes[:, 3]
+    scores = boxes[:, 4]
+    
+    # Calculate area
+    areas = (x2 - x1) * (y2 - y1)
+    
+    # Sort by confidence score
+    order = scores.argsort()[::-1]
+    
+    keep = []
+    while order.size > 0:
+        i = order[0]
+        keep.append(i)
+        
+        # Calculate intersection
+        xx1 = np.maximum(x1[i], x1[order[1:]])
+        yy1 = np.maximum(y1[i], y1[order[1:]])
+        xx2 = np.minimum(x2[i], x2[order[1:]])
+        yy2 = np.minimum(y2[i], y2[order[1:]])
+        
+        w = np.maximum(0.0, xx2 - xx1)
+        h = np.maximum(0.0, yy2 - yy1)
+        inter = w * h
+        
+        # Calculate IoU
+        ovr = inter / (areas[i] + areas[order[1:]] - inter)
+        
+        # Keep boxes with IoU less than threshold
+        inds = np.where(ovr <= iou_threshold)[0]
+        order = order[inds + 1]
+    
+    filtered_objects = [detected_objects[i] for i in keep]
+    return filtered_objects
 
 class VideoTransformer(VideoTransformerBase):
     def __init__(self):
