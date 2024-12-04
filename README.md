@@ -75,7 +75,7 @@ Buah
 Minuman
 
 
-<img src="https://github.com/FAISALAKBARr/Object-Detection-for-Balanced-Meal-Evaluation-According-to-4-Sehat-5-Sempurna/blob/main/demo%20test/minuman/Images(6).jpg" width="200" height="200">
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-Balanced-Meal-Evaluation-According-to-4-Sehat-5-Sempurna/blob/main/demo%20test/minuman/Image(6).jpg" width="200" height="200">
 
 
 ## Results
@@ -161,4 +161,4 @@ If you find this project useful, we'd grateful if you cite this repository:
 For academic and non-commercial use only.
 
 ## Acknowledgement
-This project entitled <b>"YOUR PROJECT TITLE HERE"</b> is supported and funded by Startup Campus Indonesia and Indonesian Ministry of Education and Culture through the "**Kampus Merdeka: Magang dan Studi Independen Bersertifikasi (MSIB)**" program.
+This project entitled <b>"Automated Nutritional Analysis: Object Detection for Balanced Meal Evaluation According to 4 Sehat 5 Sempurna"</b> is supported and funded by Startup Campus Indonesia and Indonesian Ministry of Education and Culture through the "**Kampus Merdeka: Magang dan Studi Independen Bersertifikasi (MSIB)**" program.
