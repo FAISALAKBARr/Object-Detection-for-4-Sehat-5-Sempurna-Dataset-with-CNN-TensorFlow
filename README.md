@@ -27,7 +27,7 @@ Please describe your Startup Campus final project here. You may should your <b>m
 | Muhammad Ihsan Robbani | Politeknik Negeri Sriwijaya | ihsanrobbani23@gmail.com | [Profile LinkedIn](https://www.linkedin.com/in/ihsanrobbani) | Team Member |
 | Advent Samuel Halomoan | Politeknik Negeri Sriwijaya | adventsamuelhalomoan36@gmail.com | [Profile LinkedIn](https://www.linkedin.com/in/advent-samuel-halomoan-957b69221/) | Team Member |
 | Gally Sabara | Politeknik Negeri Sriwijaya | gallysabara44@gmail.com | [Profile LinkedIn](https://www.linkedin.com/in/gally-sabara-597397335) | Team Member |
-| ... | ... | ... | ... | ... |
+| Nur Alifa Septianti | Public Bootcamp Enterprise | alifaseptianti21@gmail.com | [Profile LinkedIn](https://id.linkedin.com/in/nur-alifa-septianti-34552b168) | Team Member |
 | Nicholas Dominic | Startup Campus, AI Track | nic.dominic@icloud.com | [Profile Linkedln](https://linkedin.com/in/nicholas-dominic) | Supervisor |
 
 ## Setup
