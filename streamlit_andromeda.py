@@ -137,22 +137,30 @@ def predict_image(image):
         height, width = original_image.shape[:2]
         output_image = original_image.copy()
         
-        # Lower threshold untuk mendeteksi lebih banyak objek
-        CONFIDENCE_THRESHOLD = 0.3
+        # Meningkatkan threshold untuk mengurangi false positives
+        CONFIDENCE_THRESHOLD = 0.45
         
-        # Sliding window parameters
-        WINDOW_SIZES = [(224, 224), (160, 160)]  # Multiple window sizes
-        STRIDE = 112  # Stride untuk sliding window
+        # Sliding window parameters yang lebih optimal
+        WINDOW_SIZES = [(320, 320), (224, 224)]  # Ukuran window yang lebih besar
+        STRIDE_RATIO = 0.5  # Stride sebagai rasio dari ukuran window
         
         detected_objects = []
         
-        # Implement sliding window detection
+        # Improved sliding window detection
         for window_size in WINDOW_SIZES:
-            for y in range(0, height - window_size[1], STRIDE):
-                for x in range(0, width - window_size[0], STRIDE):
-                    # Extract window
-                    window = original_image[y:y + window_size[1], x:x + window_size[0]]
+            stride = int(min(window_size) * STRIDE_RATIO)
+            
+            for y in range(0, height - window_size[1] + stride, stride):
+                for x in range(0, width - window_size[0] + stride, stride):
+                    # Pastikan window tidak melebihi batas gambar
+                    end_y = min(y + window_size[1], height)
+                    end_x = min(x + window_size[0], width)
                     
+                    # Extract and adjust window
+                    window = original_image[y:end_y, x:end_x]
+                    if window.shape[0] < 10 or window.shape[1] < 10:  # Skip window yang terlalu kecil
+                        continue
+                        
                     # Process window
                     processed_window, _ = preprocess_image(window)
                     window_predictions = model.predict(processed_window, verbose=0)[0]
@@ -161,121 +169,158 @@ def predict_image(image):
                     if max_confidence > CONFIDENCE_THRESHOLD:
                         class_idx = np.argmax(window_predictions)
                         
-                        # Generate random color for this detection
-                        color = (
-                            np.random.randint(0, 255),
-                            np.random.randint(0, 255),
-                            np.random.randint(0, 255)
-                        )
+                        # Calculate relative area of the detection
+                        area_ratio = (end_x - x) * (end_y - y) / (width * height)
                         
-                        # Add detection
-                        detected_objects.append({
-                            'class': class_names[class_idx],
-                            'confidence': float(max_confidence * 100),
-                            'bbox': (x, y, x + window_size[0], y + window_size[1]),
-                            'color': color
-                        })
+                        # Filter out detections that are too small or too large
+                        if 0.1 <= area_ratio <= 0.8:
+                            detected_objects.append({
+                                'class': class_names[class_idx],
+                                'confidence': float(max_confidence * 100),
+                                'bbox': (x, y, end_x, end_y),
+                                'area': area_ratio
+                            })
         
-        # Non-maximum suppression to remove overlapping boxes
-        filtered_objects = non_max_suppression(detected_objects)
+        # Improved non-max suppression
+        filtered_objects = non_max_suppression(detected_objects, iou_threshold=0.4)
         
-        # Draw filtered detections
-        for obj in filtered_objects:
+        # Post-processing: merge nearby detections of the same class
+        merged_objects = merge_nearby_detections(filtered_objects)
+        
+        # Draw final detections
+        for obj in merged_objects:
             x1, y1, x2, y2 = obj['bbox']
-            color = obj['color']
             
-            # Draw bounding box
-            cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
+            # Assign consistent colors for each class
+            color = get_class_color(obj['class'])
             
-            # Add label
+            # Draw bounding box with thicker lines
+            cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 3)
+            
+            # Improve label visualization
             label = f"{obj['class']}: {obj['confidence']:.1f}%"
-            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
             
-            # Ensure label background doesn't go outside image
-            label_y = max(y1, label_size[1] + 10)
+            # Ensure label is visible
+            label_y = y1 - 10 if y1 - 10 > label_size[1] else y1 + label_size[1] + 10
             
-            # Draw label background
+            # Draw label with better visibility
             cv2.rectangle(output_image, 
                         (x1, label_y - label_size[1] - 10),
                         (x1 + label_size[0], label_y),
                         color, -1)
-            
-            # Draw label text
             cv2.putText(output_image, label,
                        (x1, label_y - 5),
-                       cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
+                       cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
         
-        # Calculate overall probabilities
+        # Calculate overall probabilities based on merged detections
+        class_counts = {}
+        for obj in merged_objects:
+            class_name = obj['class']
+            if class_name not in class_counts:
+                class_counts[class_name] = 1
+            else:
+                class_counts[class_name] += 1
+        
         all_probabilities = {
-            class_names[i]: float(predictions[0][i]) * 100 
-            for i in range(len(class_names))
+            class_name: (count / len(merged_objects) * 100 if merged_objects else 0)
+            for class_name, count in class_counts.items()
         }
         
-        # Get primary class (highest confidence)
-        primary_class = filtered_objects[0]['class'] if filtered_objects else class_names[np.argmax(predictions[0])]
-        primary_confidence = filtered_objects[0]['confidence'] if filtered_objects else float(np.max(predictions[0])) * 100
+        # Fill in missing classes with zero probability
+        for class_name in class_names:
+            if class_name not in all_probabilities:
+                all_probabilities[class_name] = 0.0
         
         return {
-            'class': primary_class,
-            'confidence': primary_confidence,
+            'class': merged_objects[0]['class'] if merged_objects else None,
+            'confidence': merged_objects[0]['confidence'] if merged_objects else 0,
             'all_probabilities': all_probabilities,
             'output_image': output_image,
-            'detected_objects': filtered_objects
+            'detected_objects': merged_objects
         }
         
     except Exception as e:
         st.error(f"Error during prediction: {str(e)}")
         return None
 
-def non_max_suppression(detected_objects, iou_threshold=0.3):
+def merge_nearby_detections(detections, distance_threshold=50):
     """
-    Apply non-maximum suppression to remove overlapping boxes
+    Merge nearby detections of the same class
     """
-    if not detected_objects:
+    if not detections:
         return []
     
-    # Convert to numpy array for easier processing
-    boxes = np.array([[obj['bbox'][0], obj['bbox'][1], 
-                      obj['bbox'][2], obj['bbox'][3], 
-                      obj['confidence']] for obj in detected_objects])
+    merged = []
+    used = set()
     
-    # Get coordinates
-    x1 = boxes[:, 0]
-    y1 = boxes[:, 1]
-    x2 = boxes[:, 2]
-    y2 = boxes[:, 3]
-    scores = boxes[:, 4]
-    
-    # Calculate area
-    areas = (x2 - x1) * (y2 - y1)
-    
-    # Sort by confidence score
-    order = scores.argsort()[::-1]
-    
-    keep = []
-    while order.size > 0:
-        i = order[0]
-        keep.append(i)
+    for i, det1 in enumerate(detections):
+        if i in used:
+            continue
+            
+        current_group = [det1]
+        used.add(i)
         
-        # Calculate intersection
-        xx1 = np.maximum(x1[i], x1[order[1:]])
-        yy1 = np.maximum(y1[i], y1[order[1:]])
-        xx2 = np.minimum(x2[i], x2[order[1:]])
-        yy2 = np.minimum(y2[i], y2[order[1:]])
+        for j, det2 in enumerate(detections):
+            if j in used or i == j:
+                continue
+                
+            if det1['class'] == det2['class']:
+                x1, y1, x2, y2 = det1['bbox']
+                x3, y3, x4, y4 = det2['bbox']
+                
+                # Calculate center points
+                center1 = ((x1 + x2) // 2, (y1 + y2) // 2)
+                center2 = ((x3 + x4) // 2, (y3 + y4) // 2)
+                
+                # Calculate distance between centers
+                distance = np.sqrt((center1[0] - center2[0])**2 + (center1[1] - center2[1])**2)
+                
+                if distance < distance_threshold:
+                    current_group.append(det2)
+                    used.add(j)
         
-        w = np.maximum(0.0, xx2 - xx1)
-        h = np.maximum(0.0, yy2 - yy1)
-        inter = w * h
-        
-        # Calculate IoU
-        ovr = inter / (areas[i] + areas[order[1:]] - inter)
-        
-        # Keep boxes with IoU less than threshold
-        inds = np.where(ovr <= iou_threshold)[0]
-        order = order[inds + 1]
+        # Merge the group
+        if current_group:
+            merged_box = merge_boxes(current_group)
+            merged.append(merged_box)
     
-    filtered_objects = [detected_objects[i] for i in keep]
-    return filtered_objects
+    return merged
+
+def merge_boxes(boxes):
+    """
+    Merge a group of boxes into one
+    """
+    if not boxes:
+        return None
+    
+    # Calculate average coordinates
+    x1 = min(box['bbox'][0] for box in boxes)
+    y1 = min(box['bbox'][1] for box in boxes)
+    x2 = max(box['bbox'][2] for box in boxes)
+    y2 = max(box['bbox'][3] for box in boxes)
+    
+    # Calculate average confidence
+    avg_confidence = sum(box['confidence'] for box in boxes) / len(boxes)
+    
+    return {
+        'class': boxes[0]['class'],
+        'confidence': avg_confidence,
+        'bbox': (x1, y1, x2, y2)
+    }
+
+def get_class_color(class_name):
+    """
+    Return consistent color for each class
+    """
+    color_map = {
+        'buah': (0, 255, 0),      # Green
+        'karbohidrat': (255, 0, 0),  # Red
+        'minuman': (0, 0, 255),    # Blue
+        'protein': (255, 165, 0),  # Orange
+        'sayur': (128, 0, 128)    # Purple
+    }
+    return color_map.get(class_name, (200, 200, 200))
 
 class VideoTransformer(VideoTransformerBase):
     def __init__(self):
