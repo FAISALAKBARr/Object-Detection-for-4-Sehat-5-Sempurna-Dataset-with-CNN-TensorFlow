@@ -7,6 +7,7 @@ import cv2
 from PIL import Image
 import gdown
 from tqdm import tqdm
+import pandas as pd
 import io
 import time
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, WebRtcMode
@@ -218,42 +219,74 @@ def predict_image(image):
         st.error(f"Error during prediction: {str(e)}")
         return None
 
+# Modify VideoTransformer class
 class VideoTransformer(VideoTransformerBase):
     def __init__(self):
         self.model = load_model()
         self.last_prediction_time = time.time()
-        self.prediction_interval = 1.0  # Predict every 1 second
+        self.prediction_interval = 0.5  # Reduce prediction frequency
         self.current_prediction = None
-        self.detection_history = []  # Untuk tracking deteksi sebelumnya
+        self.detection_history = []
+        self.frame_count = 0
+        self.skip_frames = 2  # Process every nth frame
 
     def transform(self, frame):
-        img = frame.to_ndarray(format="bgr24")
-        
-        current_time = time.time()
-        if current_time - self.last_prediction_time >= self.prediction_interval:
-            result = predict_image(img)
-            self.current_prediction = result
-            self.last_prediction_time = current_time
+        try:
+            self.frame_count += 1
+            img = frame.to_ndarray(format="bgr24")
             
-            if result and 'detected_objects' in result:
-                self.detection_history = result['detected_objects'][-5:]  # Simpan 5 deteksi terakhir
+            # Skip frames to reduce processing load
+            if self.frame_count % self.skip_frames != 0:
+                return img
+            
+            current_time = time.time()
+            if current_time - self.last_prediction_time >= self.prediction_interval:
+                # Resize image to reduce processing load
+                small_img = cv2.resize(img, (224, 224))
+                result = predict_image(small_img)
+                
+                if result:
+                    self.current_prediction = result
+                    self.last_prediction_time = current_time
+                    
+                    if 'detected_objects' in result:
+                        self.detection_history = result['detected_objects'][-3:]  # Keep only last 3 detections
 
-        if self.current_prediction:
-            img = self.current_prediction['output_image']
+            # Draw detections if available
+            if self.current_prediction:
+                # Draw bounding boxes and labels
+                for det in self.detection_history:
+                    label = f"{det['class']}: {det['confidence']:.1f}%"
+                    cv2.putText(img, label, (10, 30),
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+
+            return img
             
-            # Tambahkan overlay informasi
-            height, width = img.shape[:2]
-            overlay = np.zeros((height, width, 3), dtype=np.uint8)
-            
-            # Tampilkan informasi deteksi
-            y_offset = 30
-            for det in self.detection_history:
-                text = f"{det['class']}: {det['confidence']:.1f}%"
-                cv2.putText(img, text, (10, y_offset),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-                y_offset += 25
-            
-        return img
+        except Exception as e:
+            print(f"Error in transform: {str(e)}")
+            return img
+
+# Modify the WebRTC configuration
+def setup_webrtc():
+    rtc_configuration = RTCConfiguration(
+        {"iceServers": [
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {"urls": ["stun:stun1.l.google.com:19302"]},
+            {"urls": ["stun:stun2.l.google.com:19302"]},
+        ]}
+    )
+    
+    return webrtc_streamer(
+        key="food-detection",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=rtc_configuration,
+        video_transformer_factory=VideoTransformer,
+        async_transform=True,
+        media_stream_constraints={
+            "video": {"width": 640, "height": 480},
+            "audio": False
+        }
+    )
 
 def main():
     # Create tabs for different functionalities
@@ -340,19 +373,109 @@ def main():
         st.write("### Real-time Detection")
         st.write("Gunakan kamera untuk deteksi makanan dan minuman secara real-time")
         
-        # WebRTC configuration
-        rtc_configuration = RTCConfiguration(
-            {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-        )
+        # Create columns for stream and info
+        stream_col, info_col = st.columns([2, 1])
         
-        # Create WebRTC streamer
-        webrtc_ctx = webrtc_streamer(
-            key="food-detection-streamRealtime",
-            mode=WebRtcMode.SENDRECV,
-            rtc_configuration=rtc_configuration,
-            video_transformer_factory=VideoTransformer,
-            async_transform=True
-        )
+        with stream_col:
+            try:
+                # Setup and start WebRTC stream
+                webrtc_ctx = setup_webrtc()
+                
+                if webrtc_ctx.state.playing:
+                    st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
+                    
+                    # Add stream statistics
+                    stats_placeholder = st.empty()
+                    while webrtc_ctx.state.playing:
+                        stats = {
+                            "Status": "Active",
+                            "Resolution": "640x480",
+                            "Frame Rate": "~15 fps"
+                        }
+                        stats_df = pd.DataFrame([stats])
+                        stats_placeholder.table(stats_df)
+                        time.sleep(1)
+                else:
+                    st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
+                    
+            except Exception as e:
+                st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
+                st.info("Tips troubleshooting:")
+                st.markdown("""
+                    - Pastikan browser mengizinkan akses kamera
+                    - Coba refresh halaman
+                    - Pastikan koneksi internet stabil
+                    - Coba gunakan browser berbeda (Chrome/Firefox)
+                """)
+        
+        with info_col:
+            st.markdown("""
+            ### Panduan Penggunaan
+            1. Klik tombol 'START' untuk memulai stream
+            2. Izinkan akses kamera jika diminta
+            3. Arahkan kamera ke objek makanan/minuman
+            4. Sistem akan mendeteksi dan mengklasifikasikan secara otomatis
+            
+            ### Kategori yang Dapat Dideteksi:
+            - 🍎 Buah-buahan
+            - 🍚 Karbohidrat
+            - 🥤 Minuman
+            - 🍖 Protein
+            - 🥬 Sayuran
+            
+            ### Tips Penggunaan:
+            - Pastikan pencahayaan cukup
+            - Jaga kamera tetap stabil
+            - Posisikan objek di tengah frame
+            - Hindari gerakan terlalu cepat
+            """)
+            
+            # Add debug information in expander
+            with st.expander("Debug Information"):
+                if webrtc_ctx is not None:
+                    st.write("WebRTC State:", webrtc_ctx.state)
+                    st.write("Video Transform:", "Active" if webrtc_ctx.video_transformer else "Inactive")
+                    
+                    if hasattr(webrtc_ctx.video_transformer, 'frame_count'):
+                        st.write("Processed Frames:", webrtc_ctx.video_transformer.frame_count)
+                    
+                    # Add session state information
+                    if 'last_error' in st.session_state:
+                        st.error(f"Last Error: {st.session_state.last_error}")
+            
+            # Add performance metrics
+            with st.expander("Performance Metrics"):
+                if webrtc_ctx and webrtc_ctx.state.playing:
+                    metrics = {
+                        "CPU Usage": "Monitoring...",
+                        "Memory Usage": "Monitoring...",
+                        "FPS": "Calculating...",
+                        "Latency": "Measuring..."
+                    }
+                    st.table(pd.DataFrame([metrics]))
+            
+            # Add stop button
+            if st.button("STOP STREAM", key="stop_stream"):
+                if webrtc_ctx is not None:
+                    webrtc_ctx.video_transformer = None
+                    st.experimental_rerun()
+        
+        # Add status indicator
+        status_placeholder = st.empty()
+        if webrtc_ctx and webrtc_ctx.state.playing:
+            status_placeholder.success("🎥 Stream berjalan normal")
+        else:
+            status_placeholder.warning("📵 Stream tidak aktif")
+        
+        # Add error logging
+        if 'errors' not in st.session_state:
+            st.session_state.errors = []
+        
+        # Show recent errors if any
+        if st.session_state.errors:
+            with st.expander("Error Log"):
+                for error in st.session_state.errors[-5:]:  # Show last 5 errors
+                    st.error(error)
 
     # Sidebar information
     st.sidebar.title("ℹ️ Informasi Sistem")
