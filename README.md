@@ -99,7 +99,7 @@ Feel free to adjust the columns in the table below.
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | vit_b_16 | 110 |  0.0001 | 16 | Adam | 0.093 | 88.34% | 84.15% | ... |
 | vit_l_32 | 110 | 0.001 | 16 | Adam | 0.041 | 90.19% | 87.55% | ... |
-| ... | ... | ... | 16 | Adam | ... | ... | ... | ... | 
+| Code Versi 2 | 110 | 0.0001 | 16 | Adam | 0.518 | ... | 82.40% | ... | 
 
 <!-- | model | epoch | learning_rate | batch_size | optimizer | val_loss | val_precision | val_recall | ... |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
