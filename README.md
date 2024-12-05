@@ -136,13 +136,13 @@ Website kami dirancang dengan antarmuka yang sederhana dan fungsional hal ini me
 <b>PREVIEW</b>
 
 <b>Home<b>
-<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/Home.png" width="1920" height="936">
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/Home.png">
 
 <b>Upload Image</b>
-<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/uploadgbr.png" width="1920" height="945">
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/uploadgbr.png">
 
 <b>Realtime</b>
-<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/realtime.png" width="1920" height="948">
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/realtime.png">
 
 
 ## Supporting Documents
