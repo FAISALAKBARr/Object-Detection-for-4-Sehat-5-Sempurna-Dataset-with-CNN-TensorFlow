@@ -36,8 +36,16 @@ Please describe your Startup Campus final project here. You may should your <b>m
 - openai==0.28.0
 - google-cloud-aiplatform==1.34.0
 - google-cloud-bigquery==3.12.0
-- ...
-- ...
+- python==3.11.2
+- tensorflow==2.18.0
+- opencv-python==4.10.0
+- numpy==2.1.0
+- Pillow==10.4.0
+- Keras==3.6.0
+- streamlit==1.40.2
+- streamlit-option-menu==0.4.0
+- scikit-learn==1.5.2
+- seaborn==0.13.2
 
 ### Environment
 | | |
