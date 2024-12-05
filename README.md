@@ -97,8 +97,6 @@ Feel free to adjust the columns in the table below.
 
 | model | epoch | learning_rate | batch_size | optimizer | val_loss | val_precision | val_recall | ... |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vit_b_16 | 110 |  0.0001 | 16 | Adam | 0.093 | 88.34% | 84.15% | ... |
-| vit_l_32 | 110 | 0.001 | 16 | Adam | 0.041 | 90.19% | 87.55% | ... |
 | Code Versi 2 | 110 | 0.0001 | 16 | Adam | 0.518 | ... | 82.40% | ... | 
 
 <!-- | model | epoch | learning_rate | batch_size | optimizer | val_loss | val_precision | val_recall | ... |
@@ -129,7 +127,23 @@ Grafik
 Show some implementations (demos) of this model. Show **at least 10 images** of how your model performs on the testing data.
 
 ### Deployment (Optional)
-Describe and show how you deploy this project (e.g., using Streamlit ), if any.
+Anda dapat mengakses website kami melalui link berikut: [Wesite Andromeda](https://object-detection-for-4-sehat-5-sempurna.streamlit.app)
+
+Object Detection for 4 Sehat 5 Sempurna adalah aplikasi berbasis web yang menggunakan machine learning untuk mendeteksi tingkat nutrisi dan gizi dalam sebuah piring makanan. Ini dikembangkan dengan TensorFlow menggunakan model Convolutional Neural Networks (CNN) dan bertujuan untuk mengidentifikasi makanan berdasarkan konsep "4 Sehat 5 Sempurna" dalam budaya Indonesia. Aplikasi ini didesain untuk membantu analisis nutrisi secara otomatis, seperti memeriksa apakah makanan memenuhi komponen gizi yang seimbang. Proses deteksi dilakukan berdasarkan input berupa file gambar dan juga secara realtime, sehingga memungkinkan pengguna untuk menganalisis berbagai jenis data secara fleksibel.
+
+Website kami dirancang dengan antarmuka yang sederhana dan fungsional hal ini membuatnya mudah digunakan bagi pengguna yang ingin mengunggah gambar makanan dan mendapatkan hasil deteksi.
+
+<b>PREVIEW</b>
+
+<b>Home<b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/Home.png" width="1920" height="936">
+
+<b>Upload Image</b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/uploadgbr.png" width="1920" height="945">
+
+<b>Realtime</b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/realtime.png" width="1920" height="948">
+
 
 ## Supporting Documents
 ### Presentation Deck
