@@ -120,7 +120,7 @@ Any improvements or modifications of your base model, should be summarized in th
 Insert an image regarding your training and evaluation performances (especially their losses). The aim is to assess whether your model is fit, overfit, or underfit.
 
 Grafik 
-<img src="[https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/minuman/Image%20(6).jpg](https://raw.githubusercontent.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/refs/heads/main/dokumentasi/Training%20New%20Dataset%2BSplit%20Data15_70_15/Code%20Versi%202/lr%201%2C-e4%20(0%2C0001)%20size%20224%20bs%2016%20epochs%20110%20(83%2C6%25%2082%2C4%25)/grafik.png)">
+<img src="[https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/minuman/Image%20(6).jpg](https://raw.githubusercontent.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/refs/heads/main/dokumentasi/Training%20New%20Dataset%2BSplit%20Data15_70_15/Code%20Versi%202/lr%201%2C-e4%20(0%2C0001)%20size%20224%20bs%2016%20epochs%20110%20(83%2C6%25%2082%2C4%25)/grafik.png" width="200" height="200">>
  
 ### Testing
 Show some implementations (demos) of this model. Show **at least 10 images** of how your model performs on the testing data.
