@@ -48,11 +48,31 @@ Please describe your Startup Campus final project here. You may should your <b>m
 - seaborn==0.13.2
 
 ### Environment
+**Training Kaggle**
+| | |
+| --- | --- |
+| CPU | Intel(R) Xeon(R) CPU @ 2.00GHz |
+| GPU |  Tesla P100-PCIE-16GB |
+| ROM |  8062 GB SSD |
+| RAM | 29.0 GB |
+| OS | Ubuntu 22.04.3 LTS |
+
+
+**Training Google Colab**
+| | |
+| --- | --- |
+| CPU | Intel(R) Xeon(R) CPU @ 2.20GHz |
+| GPU | NVIDIA Tesla T4, A100 |
+| ROM |  235.7 GB SSD |
+| RAM | 15 GB |
+| OS | Ubuntu 22.04.3 LTS |
+
+**Deployment**
 | | |
 | --- | --- |
 | CPU | 12th Gen Intel(R) Core(TM) i7-1260P (16 CPUs), ~2.1GHz |
-| GPU | Laptop: Intel(R) Iris(R) Xe Graphics , Kaggle: Nvidia P100 (x1) |
-| ROM | 476,92 GB SSD |
+| GPU | Laptop: Intel(R) Iris(R) Xe Graphics |
+| ROM | 512 GB SSD |
 | RAM | 16 GB |
 | OS | Microsoft Windows 11 Home Single Language |
 
