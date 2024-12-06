@@ -251,47 +251,40 @@ def predict_image(image):
         st.error(f"Error during prediction: {str(e)}")
         return None
 
-# Modify VideoTransformer class
+# Modify VideoTransformer for better real-time performance
 class VideoTransformer(VideoTransformerBase):
     def __init__(self):
         self.model = load_model()
         self.last_prediction_time = time.time()
-        self.prediction_interval = 0.5  # Reduce prediction frequency
+        self.prediction_interval = 0.2  # Increase prediction frequency
         self.current_prediction = None
-        self.detection_history = []
-        self.frame_count = 0
-        self.skip_frames = 2  # Process every nth frame
+        self.frame_buffer = []
+        self.max_buffer_size = 3
 
     def transform(self, frame):
         try:
-            self.frame_count += 1
             img = frame.to_ndarray(format="bgr24")
-            
-            # Skip frames to reduce processing load
-            if self.frame_count % self.skip_frames != 0:
-                return img
-            
             current_time = time.time()
+            
+            # Process frame if enough time has passed
             if current_time - self.last_prediction_time >= self.prediction_interval:
-                # Resize image to reduce processing load
-                small_img = cv2.resize(img, (224, 224))
-                result = predict_image(small_img)
+                result = predict_image(img)
                 
-                if result:
+                if result and 'output_image' in result:
                     self.current_prediction = result
                     self.last_prediction_time = current_time
                     
-                    if 'detected_objects' in result:
-                        self.detection_history = result['detected_objects'][-3:]  # Keep only last 3 detections
-
-            # Draw detections if available
-            if self.current_prediction:
-                # Draw bounding boxes and labels
-                for det in self.detection_history:
-                    label = f"{det['class']}: {det['confidence']:.1f}%"
-                    cv2.putText(img, label, (10, 30),
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
-
+                    # Update frame buffer
+                    self.frame_buffer.append(result['output_image'])
+                    if len(self.frame_buffer) > self.max_buffer_size:
+                        self.frame_buffer.pop(0)
+                    
+                    return result['output_image']
+            
+            # Return last processed frame if available
+            if self.frame_buffer:
+                return self.frame_buffer[-1]
+            
             return img
             
         except Exception as e:
