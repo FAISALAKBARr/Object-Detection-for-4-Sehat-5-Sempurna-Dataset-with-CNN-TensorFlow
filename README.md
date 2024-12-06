@@ -32,20 +32,126 @@ Please describe your Startup Campus final project here. You may should your <b>m
 
 ## Setup
 ### Prerequisite Packages (Dependencies)
-- pandas==2.1.0
-- openai==0.28.0
-- google-cloud-aiplatform==1.34.0
-- google-cloud-bigquery==3.12.0
-- python==3.11.2
-- tensorflow==2.18.0
-- opencv-python==4.10.0
-- numpy==2.1.0
-- Pillow==10.4.0
-- Keras==3.6.0
-- streamlit==1.40.2
-- streamlit-option-menu==0.4.0
-- scikit-learn==1.5.2
-- seaborn==0.13.2
+- absl-py==2.1.0  
+- altair==5.5.0  
+- asttokens==2.4.1  
+- astunparse==1.6.3  
+- attrs==24.2.0  
+- blinker==1.9.0  
+- cachetools==5.5.0  
+- certifi==2024.8.30  
+- charset-normalizer==3.4.0  
+- click==8.1.7  
+- colorama==0.4.6  
+- comm==0.2.2  
+- contourpy==1.2.0  
+- cycler==0.12.1  
+- debugpy==1.8.9  
+- decorator==5.1.1  
+- executing==2.1.0  
+- filelock==3.16.1  
+- flatbuffers==24.3.25  
+- fonttools==4.46.0  
+- fsspec==2024.10.0  
+- gast==0.6.0  
+- git-filter-repo==2.45.0  
+- gitdb==4.0.11  
+- GitPython==3.1.43  
+- google-pasta==0.2.0  
+- graphviz==0.20.3  
+- grpcio==1.67.1  
+- h5py==3.12.1  
+- idna==3.10  
+- ipykernel==6.29.5  
+- ipython==8.29.0  
+- jedi==0.19.2  
+- Jinja2==3.1.4  
+- joblib==1.4.2  
+- jsonschema==4.23.0  
+- jsonschema-specifications==2024.10.1  
+- jupyter_client==8.6.3  
+- jupyter_core==5.7.2  
+- keras==3.6.0  
+- kiwisolver==1.4.5  
+- libclang==18.1.1  
+- Markdown==3.7  
+- markdown-it-py==3.0.0  
+- MarkupSafe==3.0.2  
+- matplotlib==3.8.2  
+- matplotlib-inline==0.1.7  
+- mdurl==0.1.2  
+- ml-dtypes==0.4.1  
+- mpmath==1.3.0  
+- namex==0.0.8  
+- narwhals==1.14.2  
+- nest-asyncio==1.6.0  
+- networkx==3.3  
+- numpy==1.26.2  
+- opencv-contrib-python==4.10.0.84  
+- opencv-python==4.10.0.84  
+- opencv-python-headless==4.10.0.84  
+- opt_einsum==3.4.0  
+- optree==0.13.0  
+- packaging==23.2  
+- pandas==2.2.3  
+- parso==0.8.4  
+- pillow==11.0.0  
+- platformdirs==4.3.6  
+- prompt_toolkit==3.0.48  
+- protobuf==5.28.3  
+- psutil==6.1.0  
+- pure_eval==0.2.3  
+- py-cpuinfo==9.0.0  
+- pyarrow==18.0.0  
+- pydeck==0.9.1  
+- Pygments==2.18.0  
+- pyparsing==3.1.1  
+- python-dateutil==2.8.2  
+- pytz==2024.2  
+- pywin32==308  
+- PyYAML==6.0.2  
+- pyzmq==26.2.0  
+- referencing==0.35.1  
+- requests==2.32.3  
+- rich==13.9.4  
+- rpds-py==0.21.0  
+- scikit-learn==1.5.2  
+- scipy==1.14.1  
+- seaborn==0.13.2  
+- six==1.16.0  
+- smmap==5.0.1  
+- stack-data==0.6.3  
+- streamlit==1.40.1  
+- streamlit-option-menu==0.4.0  
+- streamlit-webrtc==0.47.9  
+- sympy==1.13.1  
+- tenacity==9.0.0  
+- tensorboard==2.18.0  
+- tensorboard-data-server==0.7.2  
+- tensorflow==2.18.0  
+- tensorflow-io-gcs-filesystem==0.31.0  
+- tensorflow_intel==2.18.0  
+- termcolor==2.5.0  
+- thop==0.1.1.post2209072238  
+- threadpoolctl==3.5.0  
+- toml==0.10.2  
+- torch==2.5.0  
+- torchvision==0.20.0  
+- tornado==6.4.2  
+- tqdm==4.66.6  
+- traitlets==5.14.3  
+- typing_extensions==4.12.2  
+- tzdata==2024.2  
+- ultralytics==8.3.24  
+- ultralytics-thop==2.0.9  
+- urllib3==2.2.3  
+- watchdog==6.0.0  
+- wcwidth==0.2.13  
+- Werkzeug==3.1.2  
+- wrapt==1.16.0  
+- gdown  
+
+
 
 ### Environment
 **Training Kaggle**
@@ -178,11 +284,13 @@ Website kami dirancang dengan antarmuka yang sederhana dan fungsional hal ini me
 - Link: [Andromeda Group's Presentation Deck](https://www.canva.com/design/DAGXshmx8wM/N9qiiPDu5uBXeROG2RjyGQ/edit?utm_content=DAGXshmx8wM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ### Business Model Canvas
-Provide a screenshot of your Business Model Canvas (BMC). Give some explanations, if necessary.
+*BMC*
+
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/Tambahan/Edit%20BMC.jpg">
 
 ### Short Video
 Provide a link to your short video, that should includes the project background and how it works.
-- Link: https://...
+- Link: [Youtube](https://youtu.be/to7kpovqvCs)
 
 ## References
 Provide all links that support this final project, i.e., papers, GitHub repositories, websites, etc.
