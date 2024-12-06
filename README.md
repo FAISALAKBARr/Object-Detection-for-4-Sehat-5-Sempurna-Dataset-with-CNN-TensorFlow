@@ -284,11 +284,13 @@ Website kami dirancang dengan antarmuka yang sederhana dan fungsional hal ini me
 - Link: [Andromeda Group's Presentation Deck](https://www.canva.com/design/DAGXshmx8wM/N9qiiPDu5uBXeROG2RjyGQ/edit?utm_content=DAGXshmx8wM&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ### Business Model Canvas
-Provide a screenshot of your Business Model Canvas (BMC). Give some explanations, if necessary.
+*BMC*
+
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/Tambahan/Edit%20BMC.jpg">
 
 ### Short Video
 Provide a link to your short video, that should includes the project background and how it works.
-- Link: https://...
+- Link: [Youtube](https://youtu.be/to7kpovqvCs)
 
 ## References
 Provide all links that support this final project, i.e., papers, GitHub repositories, websites, etc.
