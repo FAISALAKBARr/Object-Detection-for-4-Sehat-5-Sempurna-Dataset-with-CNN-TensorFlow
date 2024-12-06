@@ -10,7 +10,6 @@ from tqdm import tqdm
 import pandas as pd
 import io
 import time
-import asyncio
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, WebRtcMode
 
 # Set page configuration
@@ -253,19 +252,19 @@ class VideoTransformer(VideoTransformerBase):
                     if 'detected_objects' in result:
                         self.detection_history = result['detected_objects'][-3:]  # Keep only last 3 detections
 
-            # Gambar bounding box jika prediksi tersedia
+            # Draw detections if available
             if self.current_prediction:
+                # Draw bounding boxes and labels
                 for det in self.detection_history:
                     label = f"{det['class']}: {det['confidence']:.1f}%"
-                    x1, y1, x2, y2 = det['bbox']
-                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                    cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                    cv2.putText(img, label, (10, 30),
+                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
             return img
             
         except Exception as e:
             print(f"Error in transform: {str(e)}")
-            return frame.to_ndarray(format="bgr24")
+            return img
 
 # Modify the WebRTC configuration
 def setup_webrtc():
@@ -444,16 +443,16 @@ def main():
                     if 'last_error' in st.session_state:
                         st.error(f"Last Error: {st.session_state.last_error}")
             
-            # # Add performance metrics
-            # with st.expander("Performance Metrics"):
-            #     if webrtc_ctx and webrtc_ctx.state.playing:
-            #         metrics = {
-            #             "CPU Usage": "Monitoring...",
-            #             "Memory Usage": "Monitoring...",
-            #             "FPS": "Calculating...",
-            #             "Latency": "Measuring..."
-            #         }
-            #         st.table(pd.DataFrame([metrics]))
+            # Add performance metrics
+            with st.expander("Performance Metrics"):
+                if webrtc_ctx and webrtc_ctx.state.playing:
+                    metrics = {
+                        "CPU Usage": "Monitoring...",
+                        "Memory Usage": "Monitoring...",
+                        "FPS": "Calculating...",
+                        "Latency": "Measuring..."
+                    }
+                    st.table(pd.DataFrame([metrics]))
             
             # Add stop button
             if st.button("STOP STREAM", key="stop_stream"):
