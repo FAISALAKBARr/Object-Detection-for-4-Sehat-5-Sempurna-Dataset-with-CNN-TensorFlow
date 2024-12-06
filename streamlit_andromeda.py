@@ -138,12 +138,12 @@ def predict_image(image):
         height, width = original_image.shape[:2]
         output_image = original_image.copy()
         
-        CONFIDENCE_THRESHOLD = 0.1
+        CONFIDENCE_THRESHOLD = 0.3
         detected_objects = []
 
         # Sliding window parameters
-        window_sizes = [(height//2, width//2), (height//3, width//3)]
-        stride = 50  # Pixel step size for sliding window
+        window_sizes = [(height//2, width//2)]
+        stride = height//4  # Tingkatkan stride untuk mengurangi overlap
 
         for win_h, win_w in window_sizes:
             for y in range(0, height - win_h, stride):
@@ -152,7 +152,7 @@ def predict_image(image):
                     window = original_image[y:y+win_h, x:x+win_w]
                     
                     # Skip if window is too small
-                    if window.shape[0] < 32 or window.shape[1] < 32:
+                    if window.shape[0] < 64 or window.shape[1] < 64: # Tingkatkan minimum size
                         continue
                     
                     # Preprocess window
@@ -166,62 +166,17 @@ def predict_image(image):
                     window_pred = model.predict(window_array, verbose=0)
                     
                     # Check for detections
-                    for class_idx, confidence in enumerate(window_pred[0]):
-                        if confidence > CONFIDENCE_THRESHOLD:
-                            # Generate random color for this detection
-                            color = (
-                                np.random.randint(0, 255),
-                                np.random.randint(0, 255),
-                                np.random.randint(0, 255)
-                            )
-                            
-                            # Draw bounding box
-                            cv2.rectangle(
-                                output_image,
-                                (x, y),
-                                (x + win_w, y + win_h),
-                                color,
-                                2
-                            )
-                            
-                            # Add label
-                            label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
-                            label_size = cv2.getTextSize(
-                                label,
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.6,
-                                2
-                            )[0]
-                            
-                            # Ensure label background doesn't go outside image
-                            label_y = max(y, label_size[1] + 10)
-                            
-                            # Draw label background
-                            cv2.rectangle(
-                                output_image,
-                                (x, label_y - label_size[1] - 10),
-                                (x + label_size[0], label_y),
-                                color,
-                                -1
-                            )
-                            
-                            # Draw label text
-                            cv2.putText(
-                                output_image,
-                                label,
-                                (x, label_y - 5),
-                                cv2.FONT_HERSHEY_SIMPLEX,
-                                0.6,
-                                (255, 255, 255),
-                                2
-                            )
-                            
-                            # Store detection
-                            detected_objects.append({
-                                'class': class_names[class_idx],
-                                'confidence': confidence * 100,
-                                'bbox': (x, y, x + win_w, y + win_h)
-                            })
+                    max_class_idx = np.argmax(window_pred[0])
+                    confidence = window_pred[0][max_class_idx]
+                    
+                    if confidence > CONFIDENCE_THRESHOLD:
+                        # Store only the highest confidence detection for this window
+                        detected_objects.append({
+                            'class': class_names[max_class_idx],
+                            'confidence': confidence * 100,
+                            'bbox': (x, y, x + win_w, y + win_h)
+                        })
+                        
 
         # Apply Non-Maximum Suppression to remove overlapping boxes
         final_objects = []
@@ -233,30 +188,71 @@ def predict_image(image):
             
             detected_objects = [
                 obj for obj in detected_objects
-                if calculate_iou(current['bbox'], obj['bbox']) < 0.5
+                if calculate_iou(current['bbox'], obj['bbox']) < 0.3
             ]
-        
-        # Calculate overall probabilities
-        all_probabilities = {
-            class_names[i]: float(predictions[0][i]) * 100 
-            for i in range(len(class_names))
-        }
-        
-        # Get primary class (highest confidence)
-        primary_class = class_names[np.argmax(predictions[0])]
-        primary_confidence = float(np.max(predictions[0])) * 100
+        MAX_DETECTIONS = 3
+        for obj in final_objects[:MAX_DETECTIONS]:
+            x1, y1, x2, y2 = obj['bbox']
+            confidence = obj['confidence']
+            class_name = obj['class']
+            
+            # Generate consistent color based on class
+            color = get_color_for_class(class_name)
+            
+            # Draw thicker bounding box
+            cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 3)
+            
+            # Improve label visualization
+            label = f"{class_name}: {confidence:.1f}%"
+            label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.7, 2)[0]
+            
+            # Position label above bounding box
+            label_y = max(y1 - 10, label_size[1])
+            label_x = x1
+            
+            # Draw label background
+            cv2.rectangle(
+                output_image,
+                (label_x, label_y - label_size[1] - 10),
+                (label_x + label_size[0], label_y),
+                color,
+                -1
+            )
+            
+            # Draw label text
+            cv2.putText(
+                output_image,
+                label,
+                (label_x, label_y - 5),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                0.7,
+                (255, 255, 255),
+                2
+            )
         
         return {
-            'class': primary_class,
-            'confidence': primary_confidence,
-            'all_probabilities': all_probabilities,
+            'class': class_names[np.argmax(predictions[0])],
+            'confidence': float(np.max(predictions[0])) * 100,
             'output_image': output_image,
-            'detected_objects': final_objects
+            'detected_objects': final_objects[:MAX_DETECTIONS]
         }
         
     except Exception as e:
         st.error(f"Error during prediction: {str(e)}")
         return None
+
+def get_color_for_class(class_name):
+    """
+    Return consistent color for each class
+    """
+    color_map = {
+        'buah': (0, 255, 0),     # Hijau
+        'karbohidrat': (255, 0, 0),  # Biru
+        'minuman': (0, 0, 255),   # Merah
+        'protein': (255, 255, 0), # Cyan
+        'sayur': (0, 255, 255)    # Kuning
+    }
+    return color_map.get(class_name, (128, 128, 128))
 
 def calculate_iou(box1, box2):
     """
