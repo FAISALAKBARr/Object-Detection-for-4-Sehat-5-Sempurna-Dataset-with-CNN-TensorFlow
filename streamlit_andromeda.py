@@ -129,7 +129,7 @@ def preprocess_image(image, target_size=(224, 224)):
 
 def predict_image(image):
     """
-    Make prediction with multiple object detection and draw accurate bounding boxes
+    Make prediction with multiple object detection using sliding window approach
     """
     try:
         processed_image, original_image = preprocess_image(image)
@@ -138,96 +138,103 @@ def predict_image(image):
         height, width = original_image.shape[:2]
         output_image = original_image.copy()
         
-        # Lower threshold to detect more objects
         CONFIDENCE_THRESHOLD = 0.1
-        
-        # Get activation maps from the last conv layer
-        activation_model = tf.keras.Model(
-            model.input,
-            [model.get_layer('conv2d_23').output, model.output]  # Adjust layer name as per your model
-        )
-        activations, predictions = activation_model.predict(processed_image)
-        
-        # Process activation maps
-        activation_maps = np.squeeze(activations)
         detected_objects = []
-        
-        for class_idx, confidence in enumerate(predictions[0]):
-            if confidence > CONFIDENCE_THRESHOLD:
-                # Get activation map for this class
-                class_activation_map = activation_maps[:,:,class_idx]
-                
-                # Normalize and resize activation map to original image size
-                cam = cv2.resize(class_activation_map, (width, height))
-                cam = (cam - cam.min()) / (cam.max() - cam.min())
-                
-                # Threshold the activation map
-                _, binary_map = cv2.threshold(
-                    (cam * 255).astype(np.uint8),
-                    127, 255,
-                    cv2.THRESH_BINARY + cv2.THRESH_OTSU
-                )
-                
-                # Find contours in the binary map
-                contours, _ = cv2.findContours(
-                    binary_map,
-                    cv2.RETR_EXTERNAL,
-                    cv2.CHAIN_APPROX_SIMPLE
-                )
-                
-                # Process each contour as a potential object
-                for contour in contours:
-                    if cv2.contourArea(contour) > 100:  # Minimum area threshold
-                        x, y, w, h = cv2.boundingRect(contour)
-                        
-                        # Expand box slightly
-                        padding = 10
-                        x1 = max(0, x - padding)
-                        y1 = max(0, y - padding)
-                        x2 = min(width, x + w + padding)
-                        y2 = min(height, y + h + padding)
-                        
-                        # Generate random color for this detection
-                        color = (
-                            np.random.randint(0, 255),
-                            np.random.randint(0, 255),
-                            np.random.randint(0, 255)
-                        )
-                        
-                        # Draw bounding box
-                        cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
-                        
-                        # Add label
-                        label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
-                        label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-                        
-                        # Ensure label background doesn't go outside image
-                        label_y = max(y1, label_size[1] + 10)
-                        
-                        # Draw label background
-                        cv2.rectangle(
-                            output_image,
-                            (x1, label_y - label_size[1] - 10),
-                            (x1 + label_size[0], label_y),
-                            color, -1
-                        )
-                        
-                        # Draw label text
-                        cv2.putText(
-                            output_image, label,
-                            (x1, label_y - 5),
-                            cv2.FONT_HERSHEY_SIMPLEX,
-                            0.6, (255, 255, 255), 2
-                        )
-                        
-                        detected_objects.append({
-                            'class': class_names[class_idx],
-                            'confidence': confidence * 100,
-                            'bbox': (x1, y1, x2, y2)
-                        })
-        
-        # Sort detected objects by confidence
+
+        # Sliding window parameters
+        window_sizes = [(height//2, width//2), (height//3, width//3)]
+        stride = 50  # Pixel step size for sliding window
+
+        for win_h, win_w in window_sizes:
+            for y in range(0, height - win_h, stride):
+                for x in range(0, width - win_w, stride):
+                    # Extract window
+                    window = original_image[y:y+win_h, x:x+win_w]
+                    
+                    # Skip if window is too small
+                    if window.shape[0] < 32 or window.shape[1] < 32:
+                        continue
+                    
+                    # Preprocess window
+                    window_processed = Image.fromarray(window)
+                    window_processed = window_processed.resize((224, 224))
+                    window_array = tf.keras.preprocessing.image.img_to_array(window_processed)
+                    window_array = window_array / 255.0
+                    window_array = tf.expand_dims(window_array, 0)
+                    
+                    # Predict
+                    window_pred = model.predict(window_array, verbose=0)
+                    
+                    # Check for detections
+                    for class_idx, confidence in enumerate(window_pred[0]):
+                        if confidence > CONFIDENCE_THRESHOLD:
+                            # Generate random color for this detection
+                            color = (
+                                np.random.randint(0, 255),
+                                np.random.randint(0, 255),
+                                np.random.randint(0, 255)
+                            )
+                            
+                            # Draw bounding box
+                            cv2.rectangle(
+                                output_image,
+                                (x, y),
+                                (x + win_w, y + win_h),
+                                color,
+                                2
+                            )
+                            
+                            # Add label
+                            label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
+                            label_size = cv2.getTextSize(
+                                label,
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.6,
+                                2
+                            )[0]
+                            
+                            # Ensure label background doesn't go outside image
+                            label_y = max(y, label_size[1] + 10)
+                            
+                            # Draw label background
+                            cv2.rectangle(
+                                output_image,
+                                (x, label_y - label_size[1] - 10),
+                                (x + label_size[0], label_y),
+                                color,
+                                -1
+                            )
+                            
+                            # Draw label text
+                            cv2.putText(
+                                output_image,
+                                label,
+                                (x, label_y - 5),
+                                cv2.FONT_HERSHEY_SIMPLEX,
+                                0.6,
+                                (255, 255, 255),
+                                2
+                            )
+                            
+                            # Store detection
+                            detected_objects.append({
+                                'class': class_names[class_idx],
+                                'confidence': confidence * 100,
+                                'bbox': (x, y, x + win_w, y + win_h)
+                            })
+
+        # Apply Non-Maximum Suppression to remove overlapping boxes
+        final_objects = []
         detected_objects.sort(key=lambda x: x['confidence'], reverse=True)
+        
+        while detected_objects:
+            current = detected_objects.pop(0)
+            final_objects.append(current)
+            
+            detected_objects = [
+                obj for obj in detected_objects
+                if calculate_iou(current['bbox'], obj['bbox']) < 0.5
+            ]
         
         # Calculate overall probabilities
         all_probabilities = {
@@ -244,12 +251,31 @@ def predict_image(image):
             'confidence': primary_confidence,
             'all_probabilities': all_probabilities,
             'output_image': output_image,
-            'detected_objects': detected_objects
+            'detected_objects': final_objects
         }
         
     except Exception as e:
         st.error(f"Error during prediction: {str(e)}")
         return None
+
+def calculate_iou(box1, box2):
+    """
+    Calculate intersection over union between two boxes
+    box format: (x1, y1, x2, y2)
+    """
+    x1 = max(box1[0], box2[0])
+    y1 = max(box1[1], box2[1])
+    x2 = min(box1[2], box2[2])
+    y2 = min(box1[3], box2[3])
+    
+    intersection = max(0, x2 - x1) * max(0, y2 - y1)
+    
+    area1 = (box1[2] - box1[0]) * (box1[3] - box1[1])
+    area2 = (box2[2] - box2[0]) * (box2[3] - box2[1])
+    
+    union = area1 + area2 - intersection
+    
+    return intersection / union if union > 0 else 0
 
 # Modify VideoTransformer for better real-time performance
 class VideoTransformer(VideoTransformerBase):
