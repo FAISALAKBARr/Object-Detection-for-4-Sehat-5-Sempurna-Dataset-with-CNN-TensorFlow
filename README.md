@@ -36,15 +36,43 @@ Please describe your Startup Campus final project here. You may should your <b>m
 - openai==0.28.0
 - google-cloud-aiplatform==1.34.0
 - google-cloud-bigquery==3.12.0
-- ...
-- ...
+- python==3.11.2
+- tensorflow==2.18.0
+- opencv-python==4.10.0
+- numpy==2.1.0
+- Pillow==10.4.0
+- Keras==3.6.0
+- streamlit==1.40.2
+- streamlit-option-menu==0.4.0
+- scikit-learn==1.5.2
+- seaborn==0.13.2
 
 ### Environment
+**Training Kaggle**
+| | |
+| --- | --- |
+| CPU | Intel(R) Xeon(R) CPU @ 2.00GHz |
+| GPU |  Tesla P100-PCIE-16GB |
+| ROM |  8062 GB SSD |
+| RAM | 29.0 GB |
+| OS | Ubuntu 22.04.3 LTS |
+
+
+**Training Google Colab**
+| | |
+| --- | --- |
+| CPU | Intel(R) Xeon(R) CPU @ 2.20GHz |
+| GPU | NVIDIA Tesla T4, A100 |
+| ROM |  235.7 GB SSD |
+| RAM | 15 GB |
+| OS | Ubuntu 22.04.3 LTS |
+
+**Deployment**
 | | |
 | --- | --- |
 | CPU | 12th Gen Intel(R) Core(TM) i7-1260P (16 CPUs), ~2.1GHz |
-| GPU | Laptop: Intel(R) Iris(R) Xe Graphics , Kaggle: Nvidia P100 (x1) |
-| ROM | 476,92 GB SSD |
+| GPU | Laptop: Intel(R) Iris(R) Xe Graphics |
+| ROM | 512 GB SSD |
 | RAM | 16 GB |
 | OS | Microsoft Windows 11 Home Single Language |
 
@@ -97,9 +125,7 @@ Feel free to adjust the columns in the table below.
 
 | model | epoch | learning_rate | batch_size | optimizer | val_loss | val_precision | val_recall | ... |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| vit_b_16 | 110 |  0.0001 | 16 | Adam | 0.093 | 88.34% | 84.15% | ... |
-| vit_l_32 | 110 | 0.001 | 16 | Adam | 0.041 | 90.19% | 87.55% | ... |
-| ... | ... | ... | 16 | Adam | ... | ... | ... | ... | 
+| Code Versi 2 | 110 | 0.0001 | 16 | Adam | 0.518 | ... | 82.40% | ... | 
 
 <!-- | model | epoch | learning_rate | batch_size | optimizer | val_loss | val_precision | val_recall | ... |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -118,12 +144,34 @@ Any improvements or modifications of your base model, should be summarized in th
 
 #### 3. Training/Validation Curve
 Insert an image regarding your training and evaluation performances (especially their losses). The aim is to assess whether your model is fit, overfit, or underfit.
+
+Grafik 
+
+
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/dokumentasi/Training%20New%20Dataset%2BSplit%20Data15_70_15/Code%20Versi%202/lr%201%2C-e4%20(0%2C0001)%20size%20224%20bs%2016%20epochs%20110%20(83%2C6%25%2082%2C4%25)/grafik.png" width="1263" height="424">
+
  
 ### Testing
 Show some implementations (demos) of this model. Show **at least 10 images** of how your model performs on the testing data.
 
 ### Deployment (Optional)
-Describe and show how you deploy this project (e.g., using Streamlit ), if any.
+Anda dapat mengakses website kami melalui link berikut: [Wesite Andromeda](https://object-detection-for-4-sehat-5-sempurna.streamlit.app)
+
+Object Detection for 4 Sehat 5 Sempurna adalah aplikasi berbasis web yang menggunakan machine learning untuk mendeteksi tingkat nutrisi dan gizi dalam sebuah piring makanan. Ini dikembangkan dengan TensorFlow menggunakan model Convolutional Neural Networks (CNN) dan bertujuan untuk mengidentifikasi makanan berdasarkan konsep "4 Sehat 5 Sempurna" dalam budaya Indonesia. Aplikasi ini didesain untuk membantu analisis nutrisi secara otomatis, seperti memeriksa apakah makanan memenuhi komponen gizi yang seimbang. Proses deteksi dilakukan berdasarkan input berupa file gambar dan juga secara realtime, sehingga memungkinkan pengguna untuk menganalisis berbagai jenis data secara fleksibel.
+
+Website kami dirancang dengan antarmuka yang sederhana dan fungsional hal ini membuatnya mudah digunakan bagi pengguna yang ingin mengunggah gambar makanan dan mendapatkan hasil deteksi.
+
+<b>PREVIEW</b>
+
+<b>Home<b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/Home.png">
+
+<b>Upload Image</b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/uploadgbr.png">
+
+<b>Realtime</b>
+<img src="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow/blob/main/demo%20test/PREVIEW%20WEBSITE/realtime.png">
+
 
 ## Supporting Documents
 ### Presentation Deck
