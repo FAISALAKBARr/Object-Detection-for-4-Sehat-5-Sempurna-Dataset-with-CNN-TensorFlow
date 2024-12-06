@@ -497,7 +497,7 @@ def main():
     """)
 
     # Footer
-    st.write("<p style='text-align: center;'>© 2023 Andromeda. All rights reserved.</p>", unsafe_allow_html=True)
+    st.write("<p style='text-align: center;'>© 2024 Andromeda. All rights reserved.</p>", unsafe_allow_html=True)
 
     # Add a link to the GitHub repository
     st.markdown(
