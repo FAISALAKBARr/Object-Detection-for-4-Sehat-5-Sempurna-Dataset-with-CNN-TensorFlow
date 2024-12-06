@@ -380,25 +380,43 @@ def main():
         
         with stream_col:
             try:
-                # Setup and start WebRTC stream
-                webrtc_ctx = setup_webrtc()
+                # # Setup and start WebRTC stream
+                # webrtc_ctx = setup_webrtc()
                 
-                if webrtc_ctx.state.playing:
-                    st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
+                # if webrtc_ctx.state.playing:
+                #     st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
                     
-                    # Add stream statistics
-                    stats_placeholder = st.empty()
-                    while webrtc_ctx.state.playing:
-                        stats = {
-                            "Status": "Active",
-                            "Resolution": "640x480",
-                            "Frame Rate": "~15 fps"
-                        }
-                        stats_df = pd.DataFrame([stats])
-                        stats_placeholder.table(stats_df)
-                        time.sleep(1)
-                else:
-                    st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
+                #     # Add stream statistics
+                #     stats_placeholder = st.empty()
+                #     while webrtc_ctx.state.playing:
+                #         stats = {
+                #             "Status": "Active",
+                #             "Resolution": "640x480",
+                #             "Frame Rate": "~15 fps"
+                #         }
+                #         stats_df = pd.DataFrame([stats])
+                #         stats_placeholder.table(stats_df)
+                #         time.sleep(1)
+                # else:
+                #     st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
+
+                webrtc_ctx = webrtc_streamer(
+                    key="food-detection",
+                    mode=WebRtcMode.SENDRECV,
+                    rtc_configuration=rtc_configuration,
+                    video_transformer_factory=VideoTransformer,
+                    async_transform=True,
+                    media_stream_constraints={
+                        "video": {"width": 640, "height": 480},
+                        "audio": False
+                    }
+                )
+
+                if webrtc_ctx:
+                    st.write("WebRTC state:", webrtc_ctx.state)
+                    if webrtc_ctx.video_transformer:
+                        st.write("Transformer frame count:", webrtc_ctx.video_transformer.frame_count)
+
                     
             except Exception as e:
                 st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
