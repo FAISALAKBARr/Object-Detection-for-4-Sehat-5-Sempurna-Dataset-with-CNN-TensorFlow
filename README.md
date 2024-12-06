@@ -241,6 +241,7 @@ Feel free to adjust the columns in the table below.
 
 #### 2. Ablation Study
 Any improvements or modifications of your base model, should be summarized in this table. Feel free to adjust the columns in the table below.
+Untuk melihat visualisasi layering model final nya, dapat dilihat pada link berikut: [Visualisasi Layering Model](https://faisalakbarr.github.io/augmentasi-dan-layering/visualisasi_layermodel.html)
 
 | model | layer_A | layer_B | layer_C | ... | top1_acc | top5_acc |
 | --- | --- | --- | --- | --- | --- | --- |
