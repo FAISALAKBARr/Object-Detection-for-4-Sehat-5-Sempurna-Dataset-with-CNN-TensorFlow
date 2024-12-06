@@ -129,70 +129,102 @@ def preprocess_image(image, target_size=(224, 224)):
 
 def predict_image(image):
     """
-    Make prediction with multiple object detection and draw bounding boxes
+    Make prediction with multiple object detection and draw accurate bounding boxes
     """
     try:
         processed_image, original_image = preprocess_image(image)
         predictions = model.predict(processed_image, verbose=0)
         
-        # Get image dimensions
         height, width = original_image.shape[:2]
         output_image = original_image.copy()
         
-        # Threshold untuk confidence score
+        # Lower threshold to detect more objects
         CONFIDENCE_THRESHOLD = 0.1
         
+        # Get activation maps from the last conv layer
+        activation_model = tf.keras.Model(
+            model.input,
+            [model.get_layer('conv2d_23').output, model.output]  # Adjust layer name as per your model
+        )
+        activations, predictions = activation_model.predict(processed_image)
+        
+        # Process activation maps
+        activation_maps = np.squeeze(activations)
         detected_objects = []
         
-        # Analyze all predictions above threshold
         for class_idx, confidence in enumerate(predictions[0]):
             if confidence > CONFIDENCE_THRESHOLD:
-                # Calculate dynamic bounding box size based on confidence
-                box_size = int(min(width, height) * (confidence * 0.5))
+                # Get activation map for this class
+                class_activation_map = activation_maps[:,:,class_idx]
                 
-                # Calculate center point
-                center_x = width // 2
-                center_y = height // 2
+                # Normalize and resize activation map to original image size
+                cam = cv2.resize(class_activation_map, (width, height))
+                cam = (cam - cam.min()) / (cam.max() - cam.min())
                 
-                # Calculate box coordinates
-                x1 = max(0, center_x - box_size // 2)
-                y1 = max(0, center_y - box_size // 2)
-                x2 = min(width, center_x + box_size // 2)
-                y2 = min(height, center_y + box_size // 2)
-                
-                # Generate random color for this class
-                color = (
-                    np.random.randint(0, 255),
-                    np.random.randint(0, 255),
-                    np.random.randint(0, 255)
+                # Threshold the activation map
+                _, binary_map = cv2.threshold(
+                    (cam * 255).astype(np.uint8),
+                    127, 255,
+                    cv2.THRESH_BINARY + cv2.THRESH_OTSU
                 )
                 
-                # Draw bounding box
-                cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
+                # Find contours in the binary map
+                contours, _ = cv2.findContours(
+                    binary_map,
+                    cv2.RETR_EXTERNAL,
+                    cv2.CHAIN_APPROX_SIMPLE
+                )
                 
-                # Add label with class name and confidence
-                label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
-                label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
-                
-                # Ensure label background doesn't go outside image
-                label_y = max(y1, label_size[1] + 10)
-                
-                # Draw label background
-                cv2.rectangle(output_image, 
+                # Process each contour as a potential object
+                for contour in contours:
+                    if cv2.contourArea(contour) > 100:  # Minimum area threshold
+                        x, y, w, h = cv2.boundingRect(contour)
+                        
+                        # Expand box slightly
+                        padding = 10
+                        x1 = max(0, x - padding)
+                        y1 = max(0, y - padding)
+                        x2 = min(width, x + w + padding)
+                        y2 = min(height, y + h + padding)
+                        
+                        # Generate random color for this detection
+                        color = (
+                            np.random.randint(0, 255),
+                            np.random.randint(0, 255),
+                            np.random.randint(0, 255)
+                        )
+                        
+                        # Draw bounding box
+                        cv2.rectangle(output_image, (x1, y1), (x2, y2), color, 2)
+                        
+                        # Add label
+                        label = f"{class_names[class_idx]}: {confidence * 100:.2f}%"
+                        label_size = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, 0.6, 2)[0]
+                        
+                        # Ensure label background doesn't go outside image
+                        label_y = max(y1, label_size[1] + 10)
+                        
+                        # Draw label background
+                        cv2.rectangle(
+                            output_image,
                             (x1, label_y - label_size[1] - 10),
                             (x1 + label_size[0], label_y),
-                            color, -1)
-                
-                # Draw label text
-                cv2.putText(output_image, label,
-                           (x1, label_y - 5),
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 255), 2)
-                
-                detected_objects.append({
-                    'class': class_names[class_idx],
-                    'confidence': confidence * 100,
-                    'bbox': (x1, y1, x2, y2)
-                })
+                            color, -1
+                        )
+                        
+                        # Draw label text
+                        cv2.putText(
+                            output_image, label,
+                            (x1, label_y - 5),
+                            cv2.FONT_HERSHEY_SIMPLEX,
+                            0.6, (255, 255, 255), 2
+                        )
+                        
+                        detected_objects.append({
+                            'class': class_names[class_idx],
+                            'confidence': confidence * 100,
+                            'bbox': (x1, y1, x2, y2)
+                        })
         
         # Sort detected objects by confidence
         detected_objects.sort(key=lambda x: x['confidence'], reverse=True)
@@ -204,8 +236,8 @@ def predict_image(image):
         }
         
         # Get primary class (highest confidence)
-        primary_class = detected_objects[0]['class'] if detected_objects else class_names[np.argmax(predictions[0])]
-        primary_confidence = detected_objects[0]['confidence'] if detected_objects else float(np.max(predictions[0])) * 100
+        primary_class = class_names[np.argmax(predictions[0])]
+        primary_confidence = float(np.max(predictions[0])) * 100
         
         return {
             'class': primary_class,
