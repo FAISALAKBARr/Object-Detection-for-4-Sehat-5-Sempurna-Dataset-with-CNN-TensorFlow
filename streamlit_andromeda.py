@@ -474,117 +474,112 @@ def main():
                                         st.markdown(class_descriptions[obj['class']])
 
     with tab3:
-        # Real-time detection tab content
         st.write("### Real-time Detection")
+        st.write("Gunakan kamera untuk deteksi makanan dan minuman secara real-time")
+        
+        # Create columns for stream and info
         stream_col, info_col = st.columns([2, 1])
         
         with stream_col:
             try:
-                # Create a container for stream controls
-                stream_controls = st.container()
-                with stream_controls:
-                    col1, col2 = st.columns([1, 1])
-                    with col1:
-                        start_button = st.button("▶️ START STREAM", key="start_stream")
-                    with col2:
-                        stop_button = st.button("⏹️ STOP STREAM", key="stop_stream")
-
                 # Setup and start WebRTC stream
                 webrtc_ctx = setup_webrtc()
                 
-                # Stream status indicator
-                status_container = st.container()
-                
                 if webrtc_ctx.state.playing:
-                    status_container.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
+                    st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
                     
-                    # Create containers for statistics and detection results
-                    col_stats, col_detect = st.columns([1, 1])
-                    
-                    with col_stats:
-                        st.markdown("### 📊 Stream Statistics")
-                        stats_placeholder = st.empty()
-                        
-                        # Stylized stats display
+                    # Add stream statistics
+                    stats_placeholder = st.empty()
+                    while webrtc_ctx.state.playing:
                         stats = {
                             "Status": "Active",
                             "Resolution": "640x480",
                             "Frame Rate": "~15 fps"
                         }
-                        
-                        # Custom HTML for stats display
-                        stats_html = """
-                        <div style="padding: 10px; border-radius: 5px; background-color: #f0f2f6;">
-                            <table style="width: 100%;">
-                        """
-                        for key, value in stats.items():
-                            stats_html += f"""
-                                <tr>
-                                    <td style="padding: 5px; font-weight: bold;">{key}</td>
-                                    <td style="padding: 5px;">{value}</td>
-                                </tr>
-                            """
-                        stats_html += """
-                            </table>
-                        </div>
-                        """
-                        stats_placeholder.markdown(stats_html, unsafe_allow_html=True)
-                    
-                    with col_detect:
-                        st.markdown("### 🎯 Real-time Detection")
-                        detection_placeholder = st.empty()
-                        
-                        # Simulated detection results (replace with actual detection results)
-                        detection_results = {
-                            "🍎 Buah": 0.0,
-                            "🍚 Karbohidrat": 0.0,
-                            "🥤 Minuman": 0.0,
-                            "🍖 Protein": 0.0,
-                            "🥬 Sayuran": 0.0
-                        }
-                        
-                        # Update detection results in real-time
-                        for category, probability in detection_results.items():
-                            st.progress(probability)
-                            st.markdown(f"{category}: {probability:.1f}%")
-                        
+                        stats_df = pd.DataFrame([stats])
+                        stats_placeholder.table(stats_df)
+                        time.sleep(1)
                 else:
-                    status_container.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
+                    st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
                     
             except Exception as e:
                 st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
-                
-                # Enhanced error handling and troubleshooting guide
-                with st.expander("🔧 Panduan Troubleshooting"):
-                    st.markdown("""
-                        ### Langkah-langkah Pemecahan Masalah:
-                        
-                        1. **Izin Kamera** 📸
-                        - Pastikan browser mengizinkan akses kamera
-                        - Periksa pengaturan privasi browser Anda
-                        
-                        2. **Koneksi Internet** 🌐
-                        - Pastikan koneksi internet stabil
-                        - Coba refresh halaman jika stream terputus
-                        
-                        3. **Kompatibilitas Browser** 🌍
-                        - Browser yang direkomendasikan: Chrome atau Firefox
-                        - Pastikan browser Anda telah diperbarui
-                        
-                        4. **Perangkat Keras** 💻
-                        - Pastikan kamera berfungsi dengan baik
-                        - Coba gunakan kamera eksternal jika tersedia
-                        
-                        Jika masalah masih berlanjut, silakan hubungi tim support kami.
-                    """)
-
-                # Add system information for debugging
-                with st.expander("🔍 System Information"):
-                    st.code(f"""
-                        Browser User Agent: {st.session_state.get('user_agent', 'Not available')}
-                        Error Message: {str(e)}
-                        Timestamp: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
-                    """)
+                st.info("Tips troubleshooting:")
+                st.markdown("""
+                    - Pastikan browser mengizinkan akses kamera
+                    - Coba refresh halaman
+                    - Pastikan koneksi internet stabil
+                    - Coba gunakan browser berbeda (Chrome/Firefox)
+                """)
+        
+        with info_col:
+            st.markdown("""
+            ### Panduan Penggunaan
+            1. Klik tombol 'START' untuk memulai stream
+            2. Izinkan akses kamera jika diminta
+            3. Arahkan kamera ke objek makanan/minuman
+            4. Sistem akan mendeteksi dan mengklasifikasikan secara otomatis
+            
+            ### Kategori yang Dapat Dideteksi:
+            - 🍎 Buah-buahan
+            - 🍚 Karbohidrat
+            - 🥤 Minuman
+            - 🍖 Protein
+            - 🥬 Sayuran
+            
+            ### Tips Penggunaan:
+            - Pastikan pencahayaan cukup
+            - Jaga kamera tetap stabil
+            - Posisikan objek di tengah frame
+            - Hindari gerakan terlalu cepat
+            """)
+            
+            # Add debug information in expander
+            with st.expander("Debug Information"):
+                if webrtc_ctx is not None:
+                    st.write("WebRTC State:", webrtc_ctx.state)
+                    st.write("Video Transform:", "Active" if webrtc_ctx.video_transformer else "Inactive")
+                    
+                    if hasattr(webrtc_ctx.video_transformer, 'frame_count'):
+                        st.write("Processed Frames:", webrtc_ctx.video_transformer.frame_count)
+                    
+                    # Add session state information
+                    if 'last_error' in st.session_state:
+                        st.error(f"Last Error: {st.session_state.last_error}")
+            
+            # Add performance metrics
+            with st.expander("Performance Metrics"):
+                if webrtc_ctx and webrtc_ctx.state.playing:
+                    metrics = {
+                        "CPU Usage": "Monitoring...",
+                        "Memory Usage": "Monitoring...",
+                        "FPS": "Calculating...",
+                        "Latency": "Measuring..."
+                    }
+                    st.table(pd.DataFrame([metrics]))
+            
+            # Add stop button
+            if st.button("STOP STREAM", key="stop_stream"):
+                if webrtc_ctx is not None:
+                    webrtc_ctx.video_transformer = None
+                    st.experimental_rerun()
+        
+        # Add status indicator
+        status_placeholder = st.empty()
+        if webrtc_ctx and webrtc_ctx.state.playing:
+            status_placeholder.success("🎥 Stream berjalan normal")
+        else:
+            status_placeholder.warning("📵 Stream tidak aktif")
+        
+        # Add error logging
+        if 'errors' not in st.session_state:
+            st.session_state.errors = []
+        
+        # Show recent errors if any
+        if st.session_state.errors:
+            with st.expander("Error Log"):
+                for error in st.session_state.errors[-5:]:  # Show last 5 errors
+                    st.error(error)
 
     # Sidebar information
     st.sidebar.title("ℹ️ Informasi Sistem")
