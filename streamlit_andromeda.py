@@ -140,7 +140,7 @@ def predict_image(image):
         output_image = original_image.copy()
         
         # Threshold untuk confidence score
-        CONFIDENCE_THRESHOLD = 0.1
+        CONFIDENCE_THRESHOLD = 0.2
         
         detected_objects = []
         
