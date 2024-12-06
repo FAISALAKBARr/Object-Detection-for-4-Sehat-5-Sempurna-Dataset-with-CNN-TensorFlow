@@ -373,219 +373,279 @@ def main():
         st.write("Selamat datang di Sistem Andromeda! Sistem ini membantu anda menganalisis komposisi makanan sesuai panduan gizi Indonesia '4 Sehat 5 Sempurna'.")
         st.write("Andromeda telah mengembangkan aplikasi ini sebagai hasil penugasan Final project pada track Artificial Intelligence, Startup Campus.")
 
-        # Informasi tentang aplikasi
-        st.markdown(""" 
-        ### Tentang Aplikasi
-        Aplikasi ini bertujuan untuk mengembangkan **Automated Nutritional Analysis**, yaitu deteksi objek untuk evaluasi makanan sehat berdasarkan prinsip *4 Sehat 5 Sempurna*. 
-        Dengan memanfaatkan teknologi berbasis **Convolutional Neural Networks (CNN)**, aplikasi ini mampu:
-        - Menganalisis komposisi makanan.
-        - Mengevaluasi keseimbangan gizi secara otomatis.
-        - Memberikan visualisasi interaktif melalui anotasi objek pada gambar makanan.      
+        # Menampilkan informasi tentang kategori makanan
+        st.subheader("Kategori Makanan yang Dapat Dideteksi:")
+        cols = st.columns(len(class_names))
+        for idx, (class_name, col) in enumerate(zip(class_names, cols)):
+            with col:
+                st.markdown(class_descriptions[class_name])
 
-        ### Fitur Utama
-        - Deteksi dan klasifikasi makanan menggunakan **CNN**.
-        - Evaluasi otomatis keseimbangan nutrisi.
-        - Tampilan interaktif dengan anotasi visual.
-        - Mendukung edukasi masyarakat tentang gizi berbasis teknologi.
-
-        ### Teknologi yang Digunakan
-        1. **TensorFlow/Keras** untuk model CNN.
-        2. **OpenCV** untuk pemrosesan gambar.
-        3. Dataset untuk makanan dan minuman yang dihubungkan dengan Drive.
-                    
-        ### Prinsip 4 Sehat 5 Sempurna
-        - 🍚 **Carbohydrates (Karbohidrat)**
-        - 🥩 **Proteins (Protein)**
-        - 🥕 **Vegetables (Sayur)**
-        - 🍎 **Fruits (Buah)**
-        - 🥛 **Beverages (Minuman)**
-        """)
-
-        # Tombol untuk akses dataset di Kaggle
-        if st.button("Kepo sama dataset lengkap nya??"):
-            kaggle_url = "https://www.kaggle.com/datasets/andromedagroup05/data-4-sehat-5-sempurna/data"
-            st.warning("Kamu akan diarahkan ke halaman dataset di Kaggle.")
-            st.markdown(
-                f'<a href="{kaggle_url}" target="_blank" style="text-decoration:none;">'
-                '<button style="background-color:#51baff; color:white; padding:10px 20px; border:none; cursor:pointer;">'
-                '**Klik di sini yah!**</button></a>',
-                unsafe_allow_html=True
-            )
-    
     with tab2:
-        col1, col2 = st.columns(2)
+        st.header("Upload Gambar")
+        uploaded_file = st.file_uploader("Pilih gambar makanan...", type=["jpg", "jpeg", "png"])
         
-        with col1:
-            st.write("### Yuk Analisis Hidanganmu!")
-            uploaded_file = st.file_uploader("Pilih file gambar...", type=['jpg', 'jpeg', 'png'])
+        if uploaded_file is not None:
+            # Menampilkan gambar yang diupload
+            image = Image.open(uploaded_file)
+            st.image(image, caption="Gambar yang diupload", use_column_width=True)
             
-            if uploaded_file is not None:
-                image = Image.open(uploaded_file)
-                st.image(image, caption='Gambar yang diunggah', use_column_width=True)
-                
-                if st.button('GO!'):
-                    with st.spinner('Sedang menganalisis gambar...'):
-                        result = predict_image(image)
+            # Tombol untuk memulai deteksi
+            if st.button("Mulai Deteksi", key="detect_button"):
+                with st.spinner("Sedang melakukan deteksi..."):
+                    # Melakukan prediksi
+                    result = predict_image(image)
+                    
+                    if result:
+                        # Menampilkan gambar hasil deteksi
+                        st.image(result['output_image'], caption="Hasil Deteksi", use_column_width=True)
                         
-                        if result:
-                            with col2:
-                                st.write("### Hasil Analisis")
-                                st.image(result['output_image'], 
-                                       caption='Hasil Deteksi', 
-                                       use_column_width=True)
-                                
-                                # Tampilkan informasi objek yang terdeteksi
-                                st.write("#### Objek Terdeteksi:")
-                                for idx, obj in enumerate(result['detected_objects'], 1):
-                                    with st.expander(f"Objek {idx}: {obj['class'].upper()} - {obj['confidence']:.2f}%"):
-                                        st.markdown(class_descriptions[obj['class']])
-                                
-                                st.write("#### Distribusi Probabilitas:")
-                                for class_name, prob in result['all_probabilities'].items():
-                                    st.write(f"{class_name.title()}: {prob:.2f}%")
-                                    st.progress(prob/100)
-                                    
+                        # Menampilkan hasil deteksi dalam format yang lebih terstruktur
+                        st.subheader("Hasil Deteksi:")
+                        for obj in result['detected_objects']:
+                            with st.container():
+                                st.markdown(f"""
+                                    <div class="detection-box">
+                                        <p>📍 Kategori: <strong>{obj['class']}</strong></p>
+                                        <p>🎯 Tingkat Kepercayaan: <strong>{obj['confidence']:.1f}%</strong></p>
+                                        {class_descriptions[obj['class']]}
+                                    </div>
+                                """, unsafe_allow_html=True)
+
     with tab3:
-        st.write("### Real-time Detection")
-        st.write("Gunakan kamera untuk deteksi makanan dan minuman secara real-time")
+        st.header("Real-time Detection")
+        st.write("Klik tombol 'START' di bawah untuk memulai deteksi real-time menggunakan kamera")
+        webrtc_ctx = setup_webrtc()
         
-        # Create columns for stream and info
-        stream_col, info_col = st.columns([2, 1])
-        
-        with stream_col:
-            try:
-                # Setup and start WebRTC stream
-                webrtc_ctx = setup_webrtc()
-                
-                if webrtc_ctx.state.playing:
-                    st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
-                    
-                    # Add stream statistics
-                    stats_placeholder = st.empty()
-                    while webrtc_ctx.state.playing:
-                        stats = {
-                            "Status": "Active",
-                            "Resolution": "640x480",
-                            "Frame Rate": "~15 fps"
-                        }
-                        stats_df = pd.DataFrame([stats])
-                        stats_placeholder.table(stats_df)
-                        time.sleep(1)
-                else:
-                    st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
-                    
-            except Exception as e:
-                st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
-                st.info("Tips troubleshooting:")
-                st.markdown("""
-                    - Pastikan browser mengizinkan akses kamera
-                    - Coba refresh halaman
-                    - Pastikan koneksi internet stabil
-                    - Coba gunakan browser berbeda (Chrome/Firefox)
-                """)
-        
-        with info_col:
-            st.markdown("""
-            ### Panduan Penggunaan
-            1. Klik tombol 'START' untuk memulai stream
-            2. Izinkan akses kamera jika diminta
-            3. Arahkan kamera ke objek makanan/minuman
-            4. Sistem akan mendeteksi dan mengklasifikasikan secara otomatis
-            
-            ### Kategori yang Dapat Dideteksi:
-            - 🍎 Buah-buahan
-            - 🍚 Karbohidrat
-            - 🥤 Minuman
-            - 🍖 Protein
-            - 🥬 Sayuran
-            
-            ### Tips Penggunaan:
-            - Pastikan pencahayaan cukup
-            - Jaga kamera tetap stabil
-            - Posisikan objek di tengah frame
-            - Hindari gerakan terlalu cepat
-            """)
-            
-            # Add debug information in expander
-            with st.expander("Debug Information"):
-                if webrtc_ctx is not None:
-                    st.write("WebRTC State:", webrtc_ctx.state)
-                    st.write("Video Transform:", "Active" if webrtc_ctx.video_transformer else "Inactive")
-                    
-                    if hasattr(webrtc_ctx.video_transformer, 'frame_count'):
-                        st.write("Processed Frames:", webrtc_ctx.video_transformer.frame_count)
-                    
-                    # Add session state information
-                    if 'last_error' in st.session_state:
-                        st.error(f"Last Error: {st.session_state.last_error}")
-            
-            # Add performance metrics
-            with st.expander("Performance Metrics"):
-                if webrtc_ctx and webrtc_ctx.state.playing:
-                    metrics = {
-                        "CPU Usage": "Monitoring...",
-                        "Memory Usage": "Monitoring...",
-                        "FPS": "Calculating...",
-                        "Latency": "Measuring..."
-                    }
-                    st.table(pd.DataFrame([metrics]))
-            
-            # Add stop button
-            if st.button("STOP STREAM", key="stop_stream"):
-                if webrtc_ctx is not None:
-                    webrtc_ctx.video_transformer = None
-                    st.experimental_rerun()
-        
-        # Add status indicator
-        status_placeholder = st.empty()
-        if webrtc_ctx and webrtc_ctx.state.playing:
-            status_placeholder.success("🎥 Stream berjalan normal")
+        if webrtc_ctx.state.playing:
+            st.write("Status: Deteksi Sedang Berjalan")
         else:
-            status_placeholder.warning("📵 Stream tidak aktif")
-        
-        # Add error logging
-        if 'errors' not in st.session_state:
-            st.session_state.errors = []
-        
-        # Show recent errors if any
-        if st.session_state.errors:
-            with st.expander("Error Log"):
-                for error in st.session_state.errors[-5:]:  # Show last 5 errors
-                    st.error(error)
+            st.write("Status: Menunggu Start")
 
-    # Sidebar information
-    st.sidebar.title("ℹ️ Informasi Sistem")
-    st.sidebar.write("""
-    Sistem ini menggunakan model Deep Learning (CNN) untuk mengklasifikasikan
-    makanan dan minuman ke dalam 5 kategori utama.
-    
-    **Kategori yang dapat dideteksi:**
-    - 🍎 Buah-buahan
-    - 🍚 Karbohidrat
-    - 🥤 Minuman
-    - 🍖 Protein
-    - 🥬 Sayuran
-    
-    **Cara Penggunaan:**
-    1. Upload gambar atau gunakan kamera
-    2. Sistem akan otomatis mendeteksi kategori
-    3. Lihat hasil klasifikasi
-    """)
-
-    # Footer
-    st.write("<p style='text-align: center;'>© 2023 Andromeda. All rights reserved.</p>", unsafe_allow_html=True)
-
-    # Add a link to the GitHub repository
-    st.markdown(
-        """
-        <p style="text-align: center;">
-            <a href="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow.git" target="_blank" rel="noopener noreferrer">
-                <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
-            </a>
-        </p>
-        """,
-        unsafe_allow_html=True
-    )
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
+
+# def main():
+#     # Create tabs for different functionalities
+#     tab1, tab2, tab3 = st.tabs(["Home","Upload Gambar", "Real-time Detection"])
+
+#     with tab1:
+#         st.header("Automated Nutritional Analysis: Object Detection for Balanced Meal Evaluation According to 4 Sehat 5 Sempurna")
+#         st.write("Selamat datang di Sistem Andromeda! Sistem ini membantu anda menganalisis komposisi makanan sesuai panduan gizi Indonesia '4 Sehat 5 Sempurna'.")
+#         st.write("Andromeda telah mengembangkan aplikasi ini sebagai hasil penugasan Final project pada track Artificial Intelligence, Startup Campus.")
+
+#         # Informasi tentang aplikasi
+#         st.markdown(""" 
+#         ### Tentang Aplikasi
+#         Aplikasi ini bertujuan untuk mengembangkan **Automated Nutritional Analysis**, yaitu deteksi objek untuk evaluasi makanan sehat berdasarkan prinsip *4 Sehat 5 Sempurna*. 
+#         Dengan memanfaatkan teknologi berbasis **Convolutional Neural Networks (CNN)**, aplikasi ini mampu:
+#         - Menganalisis komposisi makanan.
+#         - Mengevaluasi keseimbangan gizi secara otomatis.
+#         - Memberikan visualisasi interaktif melalui anotasi objek pada gambar makanan.      
+
+#         ### Fitur Utama
+#         - Deteksi dan klasifikasi makanan menggunakan **CNN**.
+#         - Evaluasi otomatis keseimbangan nutrisi.
+#         - Tampilan interaktif dengan anotasi visual.
+#         - Mendukung edukasi masyarakat tentang gizi berbasis teknologi.
+
+#         ### Teknologi yang Digunakan
+#         1. **TensorFlow/Keras** untuk model CNN.
+#         2. **OpenCV** untuk pemrosesan gambar.
+#         3. Dataset untuk makanan dan minuman yang dihubungkan dengan Drive.
+                    
+#         ### Prinsip 4 Sehat 5 Sempurna
+#         - 🍚 **Carbohydrates (Karbohidrat)**
+#         - 🥩 **Proteins (Protein)**
+#         - 🥕 **Vegetables (Sayur)**
+#         - 🍎 **Fruits (Buah)**
+#         - 🥛 **Beverages (Minuman)**
+#         """)
+
+#         # Tombol untuk akses dataset di Kaggle
+#         if st.button("Kepo sama dataset lengkap nya??"):
+#             kaggle_url = "https://www.kaggle.com/datasets/andromedagroup05/data-4-sehat-5-sempurna/data"
+#             st.warning("Kamu akan diarahkan ke halaman dataset di Kaggle.")
+#             st.markdown(
+#                 f'<a href="{kaggle_url}" target="_blank" style="text-decoration:none;">'
+#                 '<button style="background-color:#51baff; color:white; padding:10px 20px; border:none; cursor:pointer;">'
+#                 '**Klik di sini yah!**</button></a>',
+#                 unsafe_allow_html=True
+#             )
+    
+#     with tab2:
+#         col1, col2 = st.columns(2)
+        
+#         with col1:
+#             st.write("### Yuk Analisis Hidanganmu!")
+#             uploaded_file = st.file_uploader("Pilih file gambar...", type=['jpg', 'jpeg', 'png'])
+            
+#             if uploaded_file is not None:
+#                 image = Image.open(uploaded_file)
+#                 st.image(image, caption='Gambar yang diunggah', use_column_width=True)
+                
+#                 if st.button('GO!'):
+#                     with st.spinner('Sedang menganalisis gambar...'):
+#                         result = predict_image(image)
+                        
+#                         if result:
+#                             with col2:
+#                                 st.write("### Hasil Analisis")
+#                                 st.image(result['output_image'], 
+#                                        caption='Hasil Deteksi', 
+#                                        use_column_width=True)
+                                
+#                                 # Tampilkan informasi objek yang terdeteksi
+#                                 st.write("#### Objek Terdeteksi:")
+#                                 for idx, obj in enumerate(result['detected_objects'], 1):
+#                                     with st.expander(f"Objek {idx}: {obj['class'].upper()} - {obj['confidence']:.2f}%"):
+#                                         st.markdown(class_descriptions[obj['class']])
+                                
+#                                 st.write("#### Distribusi Probabilitas:")
+#                                 for class_name, prob in result['all_probabilities'].items():
+#                                     st.write(f"{class_name.title()}: {prob:.2f}%")
+#                                     st.progress(prob/100)
+                                    
+#     with tab3:
+#         st.write("### Real-time Detection")
+#         st.write("Gunakan kamera untuk deteksi makanan dan minuman secara real-time")
+        
+#         # Create columns for stream and info
+#         stream_col, info_col = st.columns([2, 1])
+        
+#         with stream_col:
+#             try:
+#                 # Setup and start WebRTC stream
+#                 webrtc_ctx = setup_webrtc()
+                
+#                 if webrtc_ctx.state.playing:
+#                     st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
+                    
+#                     # Add stream statistics
+#                     stats_placeholder = st.empty()
+#                     while webrtc_ctx.state.playing:
+#                         stats = {
+#                             "Status": "Active",
+#                             "Resolution": "640x480",
+#                             "Frame Rate": "~15 fps"
+#                         }
+#                         stats_df = pd.DataFrame([stats])
+#                         stats_placeholder.table(stats_df)
+#                         time.sleep(1)
+#                 else:
+#                     st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
+                    
+#             except Exception as e:
+#                 st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
+#                 st.info("Tips troubleshooting:")
+#                 st.markdown("""
+#                     - Pastikan browser mengizinkan akses kamera
+#                     - Coba refresh halaman
+#                     - Pastikan koneksi internet stabil
+#                     - Coba gunakan browser berbeda (Chrome/Firefox)
+#                 """)
+        
+#         with info_col:
+#             st.markdown("""
+#             ### Panduan Penggunaan
+#             1. Klik tombol 'START' untuk memulai stream
+#             2. Izinkan akses kamera jika diminta
+#             3. Arahkan kamera ke objek makanan/minuman
+#             4. Sistem akan mendeteksi dan mengklasifikasikan secara otomatis
+            
+#             ### Kategori yang Dapat Dideteksi:
+#             - 🍎 Buah-buahan
+#             - 🍚 Karbohidrat
+#             - 🥤 Minuman
+#             - 🍖 Protein
+#             - 🥬 Sayuran
+            
+#             ### Tips Penggunaan:
+#             - Pastikan pencahayaan cukup
+#             - Jaga kamera tetap stabil
+#             - Posisikan objek di tengah frame
+#             - Hindari gerakan terlalu cepat
+#             """)
+            
+#             # Add debug information in expander
+#             with st.expander("Debug Information"):
+#                 if webrtc_ctx is not None:
+#                     st.write("WebRTC State:", webrtc_ctx.state)
+#                     st.write("Video Transform:", "Active" if webrtc_ctx.video_transformer else "Inactive")
+                    
+#                     if hasattr(webrtc_ctx.video_transformer, 'frame_count'):
+#                         st.write("Processed Frames:", webrtc_ctx.video_transformer.frame_count)
+                    
+#                     # Add session state information
+#                     if 'last_error' in st.session_state:
+#                         st.error(f"Last Error: {st.session_state.last_error}")
+            
+#             # Add performance metrics
+#             with st.expander("Performance Metrics"):
+#                 if webrtc_ctx and webrtc_ctx.state.playing:
+#                     metrics = {
+#                         "CPU Usage": "Monitoring...",
+#                         "Memory Usage": "Monitoring...",
+#                         "FPS": "Calculating...",
+#                         "Latency": "Measuring..."
+#                     }
+#                     st.table(pd.DataFrame([metrics]))
+            
+#             # Add stop button
+#             if st.button("STOP STREAM", key="stop_stream"):
+#                 if webrtc_ctx is not None:
+#                     webrtc_ctx.video_transformer = None
+#                     st.experimental_rerun()
+        
+#         # Add status indicator
+#         status_placeholder = st.empty()
+#         if webrtc_ctx and webrtc_ctx.state.playing:
+#             status_placeholder.success("🎥 Stream berjalan normal")
+#         else:
+#             status_placeholder.warning("📵 Stream tidak aktif")
+        
+#         # Add error logging
+#         if 'errors' not in st.session_state:
+#             st.session_state.errors = []
+        
+#         # Show recent errors if any
+#         if st.session_state.errors:
+#             with st.expander("Error Log"):
+#                 for error in st.session_state.errors[-5:]:  # Show last 5 errors
+#                     st.error(error)
+
+#     # Sidebar information
+#     st.sidebar.title("ℹ️ Informasi Sistem")
+#     st.sidebar.write("""
+#     Sistem ini menggunakan model Deep Learning (CNN) untuk mengklasifikasikan
+#     makanan dan minuman ke dalam 5 kategori utama.
+    
+#     **Kategori yang dapat dideteksi:**
+#     - 🍎 Buah-buahan
+#     - 🍚 Karbohidrat
+#     - 🥤 Minuman
+#     - 🍖 Protein
+#     - 🥬 Sayuran
+    
+#     **Cara Penggunaan:**
+#     1. Upload gambar atau gunakan kamera
+#     2. Sistem akan otomatis mendeteksi kategori
+#     3. Lihat hasil klasifikasi
+#     """)
+
+#     # Footer
+#     st.write("<p style='text-align: center;'>© 2023 Andromeda. All rights reserved.</p>", unsafe_allow_html=True)
+
+#     # Add a link to the GitHub repository
+#     st.markdown(
+#         """
+#         <p style="text-align: center;">
+#             <a href="https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow.git" target="_blank" rel="noopener noreferrer">
+#                 <img src="https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white" alt="GitHub">
+#             </a>
+#         </p>
+#         """,
+#         unsafe_allow_html=True
+#     )
+
+# if __name__ == '__main__':
+#     main()
