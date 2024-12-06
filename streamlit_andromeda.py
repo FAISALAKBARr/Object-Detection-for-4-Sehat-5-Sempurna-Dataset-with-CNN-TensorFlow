@@ -253,28 +253,27 @@ class VideoTransformer(VideoTransformerBase):
                     if 'detected_objects' in result:
                         self.detection_history = result['detected_objects'][-3:]  # Keep only last 3 detections
 
-            # Draw detections if available
+            # Gambar bounding box jika prediksi tersedia
             if self.current_prediction:
-                # Draw bounding boxes and labels
                 for det in self.detection_history:
                     label = f"{det['class']}: {det['confidence']:.1f}%"
-                    cv2.putText(img, label, (10, 30),
-                              cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
+                    x1, y1, x2, y2 = det['bbox']
+                    cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
+                    cv2.putText(img, label, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 0), 2)
 
             return img
             
         except Exception as e:
             print(f"Error in transform: {str(e)}")
-            return img
+            return frame.to_ndarray(format="bgr24")
 
 # Modify the WebRTC configuration
 def setup_webrtc():
     rtc_configuration = RTCConfiguration(
         {"iceServers": [
-            # {"urls": ["stun:stun.l.google.com:19302"]},
-            # {"urls": ["stun:stun1.l.google.com:19302"]},
-            # {"urls": ["stun:stun2.l.google.com:19302"]},
-            {"urls": "turn:turn.anyfirewall.com:443?transport=udp", "username": "webrtc", "credential": "webrtc"}
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {"urls": ["stun:stun1.l.google.com:19302"]},
+            {"urls": ["stun:stun2.l.google.com:19302"]},
         ]}
     )
     
@@ -380,43 +379,25 @@ def main():
         
         with stream_col:
             try:
-                # # Setup and start WebRTC stream
-                # webrtc_ctx = setup_webrtc()
+                # Setup and start WebRTC stream
+                webrtc_ctx = setup_webrtc()
                 
-                # if webrtc_ctx.state.playing:
-                #     st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
+                if webrtc_ctx.state.playing:
+                    st.success("✅ Stream aktif! Arahkan kamera ke makanan/minuman.")
                     
-                #     # Add stream statistics
-                #     stats_placeholder = st.empty()
-                #     while webrtc_ctx.state.playing:
-                #         stats = {
-                #             "Status": "Active",
-                #             "Resolution": "640x480",
-                #             "Frame Rate": "~15 fps"
-                #         }
-                #         stats_df = pd.DataFrame([stats])
-                #         stats_placeholder.table(stats_df)
-                #         time.sleep(1)
-                # else:
-                #     st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
-
-                webrtc_ctx = webrtc_streamer(
-                    key="food-detection",
-                    mode=WebRtcMode.SENDRECV,
-                    rtc_configuration=rtc_configuration,
-                    video_transformer_factory=VideoTransformer,
-                    async_transform=True,
-                    media_stream_constraints={
-                        "video": {"width": 640, "height": 480},
-                        "audio": False
-                    }
-                )
-
-                if webrtc_ctx:
-                    st.write("WebRTC state:", webrtc_ctx.state)
-                    if webrtc_ctx.video_transformer:
-                        st.write("Transformer frame count:", webrtc_ctx.video_transformer.frame_count)
-
+                    # Add stream statistics
+                    stats_placeholder = st.empty()
+                    while webrtc_ctx.state.playing:
+                        stats = {
+                            "Status": "Active",
+                            "Resolution": "640x480",
+                            "Frame Rate": "~15 fps"
+                        }
+                        stats_df = pd.DataFrame([stats])
+                        stats_placeholder.table(stats_df)
+                        time.sleep(1)
+                else:
+                    st.warning("⚠️ Stream tidak aktif. Klik 'START' untuk memulai.")
                     
             except Exception as e:
                 st.error(f"❌ Error saat menginisialisasi WebRTC: {str(e)}")
@@ -463,16 +444,16 @@ def main():
                     if 'last_error' in st.session_state:
                         st.error(f"Last Error: {st.session_state.last_error}")
             
-            # Add performance metrics
-            with st.expander("Performance Metrics"):
-                if webrtc_ctx and webrtc_ctx.state.playing:
-                    metrics = {
-                        "CPU Usage": "Monitoring...",
-                        "Memory Usage": "Monitoring...",
-                        "FPS": "Calculating...",
-                        "Latency": "Measuring..."
-                    }
-                    st.table(pd.DataFrame([metrics]))
+            # # Add performance metrics
+            # with st.expander("Performance Metrics"):
+            #     if webrtc_ctx and webrtc_ctx.state.playing:
+            #         metrics = {
+            #             "CPU Usage": "Monitoring...",
+            #             "Memory Usage": "Monitoring...",
+            #             "FPS": "Calculating...",
+            #             "Latency": "Measuring..."
+            #         }
+            #         st.table(pd.DataFrame([metrics]))
             
             # Add stop button
             if st.button("STOP STREAM", key="stop_stream"):
