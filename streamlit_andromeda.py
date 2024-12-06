@@ -10,6 +10,7 @@ from tqdm import tqdm
 import pandas as pd
 import io
 import time
+import asyncio
 from streamlit_webrtc import webrtc_streamer, VideoTransformerBase, RTCConfiguration, WebRtcMode
 
 # Set page configuration
@@ -270,9 +271,10 @@ class VideoTransformer(VideoTransformerBase):
 def setup_webrtc():
     rtc_configuration = RTCConfiguration(
         {"iceServers": [
-            {"urls": ["stun:stun.l.google.com:19302"]},
-            {"urls": ["stun:stun1.l.google.com:19302"]},
-            {"urls": ["stun:stun2.l.google.com:19302"]},
+            # {"urls": ["stun:stun.l.google.com:19302"]},
+            # {"urls": ["stun:stun1.l.google.com:19302"]},
+            # {"urls": ["stun:stun2.l.google.com:19302"]},
+            {"urls": "turn:turn.anyfirewall.com:443?transport=udp", "username": "webrtc", "credential": "webrtc"}
         ]}
     )
     
