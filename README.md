@@ -259,7 +259,7 @@ Grafik
 
  
 ### Testing
-Show some implementations (demos) of this model. Show **at least 10 images** of how your model performs on the testing data.
+testing, kita bisa mendeteksi 8 dari 10. tetapi untuk pengklasifikasiannya (analysis) 9 dari 10
 
 ### Deployment (Optional)
 Anda dapat mengakses website kami melalui link berikut: [Wesite Andromeda](https://object-detection-for-4-sehat-5-sempurna.streamlit.app)
@@ -303,10 +303,12 @@ Provide all links that support this final project, i.e., papers, GitHub reposito
 
 ## Additional Comments
 Provide your team's additional comments or final remarks for this project. For example,
-1. ...
-2. ...
-3. ...
+1. baseline terlalu simple, jadi kamu perlu penyesuaian yang memakan banyak waktu pada menentukan final layer model
+2. ⁠tiap dataclass memiliki jenis yang beragam, tetapi pada beberapa kasus ada kemiripan” dengan class lain, sehingga pendeteksian harus lebih mendalam. misalnya, 
+- tomat pada class sayur yang mirip dengan class buah karena bentuknya bulat. 
+- ⁠class karbohidrat, protein, sayur,buah memiliki banyak bentuk yg beragam
 
+  
 ## How to Cite
 If you find this project useful, we'd grateful if you cite this repository:
 ```
