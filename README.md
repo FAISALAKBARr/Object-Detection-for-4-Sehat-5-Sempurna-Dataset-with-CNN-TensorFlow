@@ -243,11 +243,12 @@ Feel free to adjust the columns in the table below.
 Any improvements or modifications of your base model, should be summarized in this table. Feel free to adjust the columns in the table below.
 Untuk melihat visualisasi layering model final nya, dapat dilihat pada link berikut: [Visualisasi Layering Model](https://faisalakbarr.github.io/augmentasi-dan-layering/visualisasi_layermodel.html)
 
-| model | layer_A | layer_B | layer_C | ... | top1_acc | top5_acc |
-| --- | --- | --- | --- | --- | --- | --- |
-| vit_b_16 | Conv(3x3, 64) x2 | Conv(3x3, 512) x3 | Conv(1x1, 2048) x3 | ... | 77.43% | 80.08% |
-| vit_b_16 | Conv(3x3, 32) x3 | Conv(3x3, 128) x3 | Conv(1x1, 1028) x2 | ... | 72.11% | 76.84% |
-| ... | ... | ... | ... | ... | ... | ... |
+| model | layer_A | layer_B | layer_C | layer_D | layer_E | top1_acc | top2_acc |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| model_v1 | Conv(3x3, 32) x1 | Conv(3x3, 64) x1 | Conv(3x3, 128) x1 | Dense(128, 64) | Dense(5) | - | - |
+| model_v2 | Conv(3x3, 64) x2 | Conv(3x3, 128) x2 | Conv(3x3, 256) x2 | Conv(3x3, 512) x2 | Dense(512, 256, 5) | 83,6% | 83,7% |
+| model_v3 | Conv(7x7, 64) x1 | Conv(3x3, 128) x2 + Residual | Conv(3x3, 256) x2 + Residual | Dense(512) | Dense(5) | 80.9% | - |
+| model_v4 | Conv(3x3, 128) x1 | Conv(3x3, 64) x2 + Residual | Conv(3x3, 128) x2 + Residual | Conv(3x3, 256) x2 + Residual | Dense(1024, 512, 5) | - | - |
 
 #### 3. Training/Validation Curve
 Insert an image regarding your training and evaluation performances (especially their losses). The aim is to assess whether your model is fit, overfit, or underfit.
@@ -262,7 +263,7 @@ Grafik
 testing, kita bisa mendeteksi 8 dari 10. tetapi untuk pengklasifikasiannya (analysis) 9 dari 10
 
 ### Deployment (Optional)
-Anda dapat mengakses website kami melalui link berikut: [Wesite Andromeda](https://object-detection-for-4-sehat-5-sempurna.streamlit.app)
+Anda dapat mengakses website kami melalui link berikut: [Website Andromeda](https://object-detection-for-4-sehat-5-sempurna.streamlit.app)
 
 Object Detection for 4 Sehat 5 Sempurna adalah aplikasi berbasis web yang menggunakan machine learning untuk mendeteksi tingkat nutrisi dan gizi dalam sebuah piring makanan. Ini dikembangkan dengan TensorFlow menggunakan model Convolutional Neural Networks (CNN) dan bertujuan untuk mengidentifikasi makanan berdasarkan konsep "4 Sehat 5 Sempurna" dalam budaya Indonesia. Aplikasi ini didesain untuk membantu analisis nutrisi secara otomatis, seperti memeriksa apakah makanan memenuhi komponen gizi yang seimbang. Proses deteksi dilakukan berdasarkan input berupa file gambar dan juga secara realtime, sehingga memungkinkan pengguna untuk menganalisis berbagai jenis data secara fleksibel.
 
