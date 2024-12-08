@@ -216,6 +216,7 @@ width="200" height="200">
 ## Results
 ### Model Performance
 Describe all results found in your final project experiments, including hyperparameters tuning and architecture modification performances. Put it into table format. Please show pictures (of model accuracy, loss, etc.) for more clarity.
+Link Training Code: [Notebook Kaggle](https://www.kaggle.com/code/andromedagroup05/cnn-4s5s-training/edit/run/211353018)
 
 #### 1. Metrics
 Inform your model validation performances, as follows:
