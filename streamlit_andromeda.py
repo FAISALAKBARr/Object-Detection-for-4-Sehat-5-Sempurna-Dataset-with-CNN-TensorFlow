@@ -347,7 +347,7 @@ def main():
             
             if uploaded_file is not None:
                 image = Image.open(uploaded_file)
-                st.image(image, caption='Gambar yang diunggah', use_column_width=True)
+                st.image(image, caption='Gambar yang diunggah', use_container_width=True)
                 
                 if st.button('GO!'):
                     with st.spinner('Sedang menganalisis gambar...'):
@@ -358,7 +358,7 @@ def main():
                                 st.write("### Hasil Analisis")
                                 st.image(result['output_image'], 
                                        caption='Hasil Deteksi', 
-                                       use_column_width=True)
+                                       use_container_width=True)
                                 
                                 # Tampilkan informasi objek yang terdeteksi
                                 st.write("#### Objek Terdeteksi:")
