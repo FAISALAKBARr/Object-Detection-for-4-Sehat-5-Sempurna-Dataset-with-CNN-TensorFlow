@@ -21,8 +21,8 @@ st.set_page_config(
     layout="wide"
 )
 
-MODEL_ID = '1FMXOk9ifEoZDl4c7NzpANiP2o_Ednt7P' 
-MODEL_PATH = 'FINAL_MODEL.h5'
+MODEL_ID = '1OK7EjfiZxcW5igjr3TjkmgbApCn_dvEp' 
+MODEL_PATH = 'best_model.keras'
 
 # Custom CSS untuk styling
 st.markdown("""
