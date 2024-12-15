@@ -297,6 +297,7 @@ Provide a link to your short video, that should includes the project background 
 
 ## References
 Provide all links that support this final project, i.e., papers, GitHub repositories, websites, etc.
+- Link: [YT Link Klasifikasi Gambar Menggunakan CNN](https://youtu.be/Atn9AmobgZw?si=fTn48CCPxMfpNgdW)
 - Link: [Padang Food Dataset](https://www.kaggle.com/datasets/faldoae/padangfood)
 - Link: [Hewan Ternak Dataset](https://www.kaggle.com/datasets/zulfafebriana/dataset-hewan-ternak)
 - Link: [Indonesian Food Dataset](https://www.kaggle.com/datasets/rizkyyk/dataset-food-classification)
