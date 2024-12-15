@@ -241,8 +241,11 @@ Feel free to adjust the columns in the table below.
 | ... | ... | ... | ... | ... | ... | ... | ... | ... |  -->
 
 #### 2. Ablation Study
-Any improvements or modifications of your base model, should be summarized in this table. Feel free to adjust the columns in the table below.
-Untuk melihat visualisasi layering model final nya, dapat dilihat pada link berikut: [Visualisasi Layering Model](https://faisalakbarr.github.io/augmentasi-dan-layering/visualisasi_layermodel.html)
+Untuk melihat visualisasi layering dan augmentasi model final nya, dapat dilihat pada link berikut:
+Visualisasi Layering Model
+Link: [Visualisasi Layering Model](https://faisalakbarr.github.io/augmentasi-dan-layering/visualisasi_layermodel.html)
+Visualisasi Augmentasi Data
+Link: [Visualisasi Augmentasi Data](https://faisalakbarr.github.io/augmentasi-dan-layering/visualisasi_augmentasi.html) 
 
 | model | layer_A | layer_B | layer_C | layer_D | layer_E | top1_acc | top2_acc |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -252,7 +255,6 @@ Untuk melihat visualisasi layering model final nya, dapat dilihat pada link beri
 | model_v4 | Conv(3x3, 128) x1 | Conv(3x3, 64) x2 + Residual | Conv(3x3, 128) x2 + Residual | Conv(3x3, 256) x2 + Residual | Dense(1024, 512, 5) | - | - |
 
 #### 3. Training/Validation Curve
-Insert an image regarding your training and evaluation performances (especially their losses). The aim is to assess whether your model is fit, overfit, or underfit.
 
 Grafik 
 
@@ -302,7 +304,6 @@ Provide all links that support this final project, i.e., papers, GitHub reposito
 - Link: [Hewan Ternak Dataset](https://www.kaggle.com/datasets/zulfafebriana/dataset-hewan-ternak)
 - Link: [Indonesian Food Dataset](https://www.kaggle.com/datasets/rizkyyk/dataset-food-classification)
 - Link: [Nutrilog Dataset](https://www.kaggle.com/datasets/israkf/nutrilog-dataset)
-- Link: https://...
 
 ## Additional Comments
 Provide your team's additional comments or final remarks for this project. For example,
