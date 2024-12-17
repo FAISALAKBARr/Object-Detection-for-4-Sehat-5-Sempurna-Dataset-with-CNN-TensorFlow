@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 # Set page configuration
 st.set_page_config(
     page_title="SmartPlate",
-    page_icon="logo/logo_app.png",
+    page_icon="logo/logo_app(2).png",
     layout="wide"
 )
 
