@@ -16,8 +16,8 @@ import matplotlib.pyplot as plt
 
 # Set page configuration
 st.set_page_config(
-    page_title="Sistem Deteksi Makanan dan Minuman",
-    page_icon="🍽️",
+    page_title="SmartPlate",
+    page_icon="logo/logo_app.png",
     layout="wide"
 )
 
