@@ -28,8 +28,10 @@ st.set_page_config(
     layout="wide"
 )
 
-MODEL_ID = '1FMXOk9ifEoZDl4c7NzpANiP2o_Ednt7P'
-MODEL_PATH = 'FINAL_MODEL.h5'
+# Model configuration - Support both .keras and .h5
+MODEL_ID = '1n0TBdM4fPuO-5cN8cTR1_McqROPcrwMn'
+MODEL_PATH_KERAS = 'FINAL_MODEL.keras'  # Preferred format for Keras 3.x
+MODEL_PATH_H5 = 'FINAL_MODEL.h5'        # Legacy format
 
 # Custom CSS
 st.markdown("""
@@ -96,33 +98,98 @@ class_descriptions = {
 
 @st.cache_resource
 def load_model_safe():
+    """
+    Load model dengan support untuk format .keras (Keras 3.x) dan .h5 (legacy)
+    """
     try:
         tf = get_tensorflow()
         
-        if not os.path.exists(MODEL_PATH):
-            with st.spinner('Downloading model...'):
+        # Check which format is available
+        model_path = None
+        
+        # Priority 1: Check for .keras format
+        if os.path.exists(MODEL_PATH_KERAS):
+            model_path = MODEL_PATH_KERAS
+            st.info(f"✅ Found model: {MODEL_PATH_KERAS}")
+        # Priority 2: Check for .h5 format
+        elif os.path.exists(MODEL_PATH_H5):
+            model_path = MODEL_PATH_H5
+            st.info(f"✅ Found model: {MODEL_PATH_H5}")
+        else:
+            # Download model from Google Drive
+            with st.spinner('📥 Downloading model from Google Drive...'):
                 url = f'https://drive.google.com/uc?id={MODEL_ID}'
-                gdown.download(url, MODEL_PATH, quiet=False)
+                
+                # Try downloading as .h5 first (since your current model is .h5)
+                try:
+                    gdown.download(url, MODEL_PATH_H5, quiet=False)
+                    model_path = MODEL_PATH_H5
+                    st.success(f"✅ Downloaded: {MODEL_PATH_H5}")
+                except Exception as e:
+                    st.error(f"❌ Failed to download model: {str(e)}")
+                    return None
         
-        model = tf.keras.models.load_model(
-            MODEL_PATH,
-            compile=False
-        )
+        if model_path is None:
+            st.error("❌ No model file found!")
+            return None
         
-        model.compile(
-            optimizer='adam',
-            loss='categorical_crossentropy',
-            metrics=['accuracy']
-        )
+        # Load the model
+        with st.spinner(f'🔄 Loading model from {model_path}...'):
+            try:
+                # Try loading with compile=False first (safer)
+                model = tf.keras.models.load_model(model_path, compile=False)
+                
+                # Recompile the model
+                model.compile(
+                    optimizer='adam',
+                    loss='categorical_crossentropy',
+                    metrics=['accuracy']
+                )
+                
+                st.success(f"✅ Model loaded successfully from {model_path}")
+                
+            except Exception as load_error:
+                st.error(f"❌ Error loading model: {str(load_error)}")
+                
+                # Try alternative loading method for .h5 files
+                if model_path.endswith('.h5'):
+                    try:
+                        st.warning("⚠️ Trying alternative loading method for .h5 file...")
+                        model = tf.keras.models.load_model(
+                            model_path,
+                            compile=False
+                        )
+                        model.compile(
+                            optimizer='adam',
+                            loss='categorical_crossentropy',
+                            metrics=['accuracy']
+                        )
+                        st.success("✅ Model loaded with alternative method")
+                    except Exception as e2:
+                        st.error(f"❌ Alternative method also failed: {str(e2)}")
+                        return None
+                else:
+                    return None
         
+        # Cleanup
         gc.collect()
         return model
         
     except Exception as e:
-        st.error(f"Error loading model: {str(e)}")
+        st.error(f"❌ Unexpected error loading model: {str(e)}")
+        st.info("""
+        **Troubleshooting Tips:**
+        1. Make sure you uploaded the correct model file format (.keras or .h5)
+        2. Check if the file is corrupted
+        3. Try re-training and re-uploading the model
+        4. Verify the MODEL_ID in Google Drive is correct
+        """)
         return None
 
 def preprocess_image(image, target_size=(224, 224)):
+    """
+    Preprocess image for model prediction
+    """
     tf = get_tensorflow()
     
     if isinstance(image, np.ndarray):
@@ -141,6 +208,9 @@ def preprocess_image(image, target_size=(224, 224)):
     return img_array, original
 
 def predict_image(image, model):
+    """
+    Make prediction with multiple object detection and draw bounding boxes
+    """
     try:
         processed_image, original_image = preprocess_image(image)
         predictions = model.predict(processed_image, verbose=0)
@@ -210,21 +280,6 @@ def predict_image(image, model):
     except Exception as e:
         st.error(f"Error during prediction: {str(e)}")
         return None
-
-def process_camera_frame(frame, model):
-    """Process single camera frame"""
-    try:
-        # Resize frame untuk processing lebih cepat
-        frame_resized = cv2.resize(frame, (640, 480))
-        result = predict_image(frame_resized, model)
-        
-        if result and result['output_image'] is not None:
-            return result['output_image'], result['detected_objects']
-        return frame_resized, []
-        
-    except Exception as e:
-        st.error(f"Error processing frame: {str(e)}")
-        return frame, []
 
 def main():
     try:
@@ -422,11 +477,21 @@ def main():
         
         st.sidebar.divider()
         st.sidebar.markdown("### 📈 Model Info")
-        st.sidebar.info("""
+        
+        # Detect model format being used
+        if os.path.exists(MODEL_PATH_KERAS):
+            model_format = "Keras 3.x (.keras)"
+        elif os.path.exists(MODEL_PATH_H5):
+            model_format = "Legacy (.h5)"
+        else:
+            model_format = "Unknown"
+            
+        st.sidebar.info(f"""
         **Arsitektur:** CNN\n
         **Input Size:** 224x224\n
         **Classes:** 5\n
-        **Framework:** TensorFlow
+        **Framework:** TensorFlow\n
+        **Format:** {model_format}
         """)
         
         # Footer
