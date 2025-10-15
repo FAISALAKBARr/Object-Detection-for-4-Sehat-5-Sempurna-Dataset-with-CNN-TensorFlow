@@ -211,6 +211,21 @@ def predict_image(image, model):
         st.error(f"Error during prediction: {str(e)}")
         return None
 
+def process_camera_frame(frame, model):
+    """Process single camera frame"""
+    try:
+        # Resize frame untuk processing lebih cepat
+        frame_resized = cv2.resize(frame, (640, 480))
+        result = predict_image(frame_resized, model)
+        
+        if result and result['output_image'] is not None:
+            return result['output_image'], result['detected_objects']
+        return frame_resized, []
+        
+    except Exception as e:
+        st.error(f"Error processing frame: {str(e)}")
+        return frame, []
+
 def main():
     try:
         model = load_model_safe()
@@ -219,7 +234,7 @@ def main():
             st.error("Failed to load model. Please refresh the page.")
             return
         
-        tab1, tab2 = st.tabs(["Home", "Upload Gambar"])
+        tab1, tab2, tab3 = st.tabs(["Home", "Upload Gambar", "Real-time Detection"])
         
         with tab1:
             st.header("Automated Nutritional Analysis: Object Detection for Balanced Meal Evaluation According to 4 Sehat 5 Sempurna")
@@ -295,6 +310,93 @@ def main():
                                     st.write(f"{class_name.title()}: {prob:.2f}%")
                                     st.progress(prob/100)
         
+        with tab3:
+            st.write("### 📸 Real-time Detection")
+            st.info("💡 **Fitur ini menggunakan kamera perangkat Anda untuk deteksi real-time**")
+            
+            col1, col2 = st.columns([2, 1])
+            
+            with col1:
+                # Camera input dari Streamlit
+                camera_image = st.camera_input("Ambil foto untuk deteksi makanan")
+                
+                if camera_image is not None:
+                    # Convert uploaded image to PIL
+                    image = Image.open(camera_image)
+                    
+                    # Placeholder untuk hasil
+                    result_placeholder = st.empty()
+                    
+                    with st.spinner('🔍 Menganalisis gambar...'):
+                        result = predict_image(image, model)
+                        
+                        if result:
+                            # Tampilkan hasil deteksi
+                            result_placeholder.image(
+                                result['output_image'],
+                                caption='Hasil Deteksi Real-time',
+                                use_container_width=True
+                            )
+                            
+                            # Tampilkan informasi deteksi
+                            if result['detected_objects']:
+                                st.success(f"✅ Terdeteksi: **{result['class'].upper()}** ({result['confidence']:.2f}%)")
+                                
+                                with st.expander("📊 Detail Deteksi"):
+                                    for idx, obj in enumerate(result['detected_objects'], 1):
+                                        st.write(f"**{idx}. {obj['class'].upper()}** - {obj['confidence']:.2f}%")
+                                        st.markdown(class_descriptions[obj['class']])
+                            else:
+                                st.warning("⚠️ Tidak ada objek terdeteksi dengan confidence tinggi")
+                            
+                            # Tampilkan probabilitas
+                            with st.expander("📈 Distribusi Probabilitas"):
+                                for class_name, prob in result['all_probabilities'].items():
+                                    st.write(f"{class_name.title()}: {prob:.2f}%")
+                                    st.progress(prob/100)
+            
+            with col2:
+                st.markdown("""
+                ### 📋 Panduan Penggunaan
+                
+                1. **Klik tombol kamera** di sebelah kiri
+                2. **Izinkan akses kamera** jika diminta browser
+                3. **Arahkan kamera** ke objek makanan/minuman
+                4. **Klik "Take Photo"** untuk mengambil gambar
+                5. **Tunggu hasil** deteksi muncul
+                
+                ### 🎯 Kategori Deteksi:
+                - 🍎 Buah-buahan
+                - 🍚 Karbohidrat
+                - 🥤 Minuman
+                - 🍖 Protein
+                - 🥬 Sayuran
+                
+                ### 💡 Tips:
+                - ✅ Pastikan pencahayaan cukup
+                - ✅ Posisikan objek di tengah
+                - ✅ Hindari blur/goyang
+                - ✅ Jarak ideal: 20-50 cm
+                - ✅ Satu objek per foto
+                
+                ### ⚙️ Troubleshooting:
+                - Jika kamera tidak muncul, cek permission browser
+                - Refresh halaman jika ada error
+                - Gunakan browser Chrome/Firefox untuk hasil terbaik
+                """)
+                
+                # Status info
+                st.divider()
+                st.markdown("### 📊 Status Sistem")
+                status_data = {
+                    "Model": "✅ Loaded",
+                    "Camera": "🟢 Ready",
+                    "Detection": "🟢 Active"
+                }
+                for key, value in status_data.items():
+                    st.write(f"**{key}:** {value}")
+        
+        # Sidebar
         st.sidebar.title("ℹ️ Informasi Sistem")
         st.sidebar.write("""
         Sistem ini menggunakan model Deep Learning (CNN) untuk mengklasifikasikan
@@ -308,11 +410,27 @@ def main():
         - 🥬 Sayuran
         
         **Cara Penggunaan:**
-        1. Upload gambar
+        1. Upload gambar atau gunakan kamera
         2. Sistem akan otomatis mendeteksi kategori
-        3. Lihat hasil klasifikasi
+        3. Lihat hasil klasifikasi dan probabilitas
+        
+        **Teknologi:**
+        - TensorFlow/Keras
+        - OpenCV
+        - Streamlit
         """)
         
+        st.sidebar.divider()
+        st.sidebar.markdown("### 📈 Model Info")
+        st.sidebar.info("""
+        **Arsitektur:** CNN\n
+        **Input Size:** 224x224\n
+        **Classes:** 5\n
+        **Framework:** TensorFlow
+        """)
+        
+        # Footer
+        st.divider()
         st.write("<p style='text-align: center;'>© 2024 Andromeda. All rights reserved.</p>", unsafe_allow_html=True)
         
         st.markdown(
