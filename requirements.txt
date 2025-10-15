@@ -1,13 +1,13 @@
 streamlit
 streamlit-option-menu
-tensorflow
+tensorflow-cpu 
 opencv-python-headless
 numpy
 Pillow
 gdown
-requests
 tqdm
 streamlit-webrtc
-tensorflow-io-gcs-filesystem
-requests
+pandas
 matplotlib
+psutil
+python-multipart
