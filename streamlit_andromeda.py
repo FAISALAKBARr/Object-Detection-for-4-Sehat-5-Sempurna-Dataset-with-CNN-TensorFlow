@@ -113,13 +113,13 @@ def load_model_safe():
         model_path = None
         
         # Priority 1: Check for .keras format
-        if os.path.exists(MODEL_PATH_KERAS):
-            model_path = MODEL_PATH_KERAS
-            st.info(f"✅ Found model: {MODEL_PATH_KERAS}")
+        if os.path.exists(MODEL_PATH_BEST_KERAS):
+            model_path = MODEL_PATH_BEST_KERAS
+            st.info(f"✅ Found model: {MODEL_PATH_BEST_KERAS}")
         # Priority 2: Check for .h5 format
-        elif os.path.exists(MODEL_PATH_H5):
-            model_path = MODEL_PATH_H5
-            st.info(f"✅ Found model: {MODEL_PATH_H5}")
+        elif os.path.exists(MODEL_PATH_BEST_H5):
+            model_path = MODEL_PATH_BEST_H5
+            st.info(f"✅ Found model: {MODEL_PATH_BEST_H5}")
         else:
             # Download model from Google Drive
             with st.spinner('📥 Downloading model from Google Drive...'):
@@ -127,9 +127,9 @@ def load_model_safe():
                 
                 # Try downloading as .h5 first (since your current model is .h5)
                 try:
-                    gdown.download(url, MODEL_PATH_H5, quiet=False)
-                    model_path = MODEL_PATH_H5
-                    st.success(f"✅ Downloaded: {MODEL_PATH_H5}")
+                    gdown.download(url, MODEL_PATH_BEST_H5, quiet=False)
+                    model_path = MODEL_PATH_BEST_H5
+                    st.success(f"✅ Downloaded: {MODEL_PATH_BEST_H5}")
                 except Exception as e:
                     st.error(f"❌ Failed to download model: {str(e)}")
                     return None
@@ -484,9 +484,9 @@ def main():
         st.sidebar.markdown("### 📈 Model Info")
         
         # Detect model format being used
-        if os.path.exists(MODEL_PATH_KERAS):
+        if os.path.exists(MODEL_PATH_BEST_KERAS):
             model_format = "Keras 3.x (.keras)"
-        elif os.path.exists(MODEL_PATH_H5):
+        elif os.path.exists(MODEL_PATH_BEST_H5):
             model_format = "Legacy (.h5)"
         else:
             model_format = "Unknown"
