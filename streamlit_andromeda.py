@@ -29,10 +29,14 @@ st.set_page_config(
 )
 
 # Model configuration - Support both .keras and .h5
-MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'
-# MODEL_PATH_KERAS = 'FINAL_MODEL_IMPROVED.keras'  # Preferred format for Keras 3.x
-MODEL_PATH_KERAS = 'best_model.keras'  # Preferred format for Keras 3.x
-MODEL_PATH_H5 = 'FINAL_MODEL.h5'        # Legacy format
+# RECOMMENDED: Use best_model (saved by ModelCheckpoint with highest val_acc)
+MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'  # Update this with your Google Drive file ID
+
+# Priority order for model files:
+MODEL_PATH_BEST_KERAS = 'best_model.keras'      # ⭐ PRIORITY 1: Best validation accuracy
+MODEL_PATH_BEST_H5 = 'best_model.h5'            # ⭐ PRIORITY 2: Best model (legacy format)
+MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_IMPROVED.keras'   # PRIORITY 3: Last epoch (backup)
+MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_IMPROVED.h5'          # PRIORITY 4: Last epoch (legacy backup)
 
 # Custom CSS
 st.markdown("""
@@ -112,10 +116,10 @@ def load_model_safe():
         if os.path.exists(MODEL_PATH_KERAS):
             model_path = MODEL_PATH_KERAS
             st.info(f"✅ Found model: {MODEL_PATH_KERAS}")
-        # # Priority 2: Check for .h5 format
-        # elif os.path.exists(MODEL_PATH_H5):
-        #     model_path = MODEL_PATH_H5
-        #     st.info(f"✅ Found model: {MODEL_PATH_H5}")
+        # Priority 2: Check for .h5 format
+        elif os.path.exists(MODEL_PATH_H5):
+            model_path = MODEL_PATH_H5
+            st.info(f"✅ Found model: {MODEL_PATH_H5}")
         else:
             # Download model from Google Drive
             with st.spinner('📥 Downloading model from Google Drive...'):
@@ -123,9 +127,9 @@ def load_model_safe():
                 
                 # Try downloading as .h5 first (since your current model is .h5)
                 try:
-                    gdown.download(url, MODEL_PATH_KERAS, quiet=False)
-                    model_path = MODEL_PATH_KERAS
-                    st.success(f"✅ Downloaded: {MODEL_PATH_KERAS}")
+                    gdown.download(url, MODEL_PATH_H5, quiet=False)
+                    model_path = MODEL_PATH_H5
+                    st.success(f"✅ Downloaded: {MODEL_PATH_H5}")
                 except Exception as e:
                     st.error(f"❌ Failed to download model: {str(e)}")
                     return None
