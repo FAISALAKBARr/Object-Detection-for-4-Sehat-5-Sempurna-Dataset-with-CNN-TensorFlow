@@ -31,6 +31,7 @@ st.set_page_config(
 # Model configuration - Support both .keras and .h5
 MODEL_ID = '1dXesbdInLlFTWpfyyrHnwUrUtDYEe5nk'
 MODEL_PATH_KERAS = 'FINAL_MODEL_IMPROVED.keras'  # Preferred format for Keras 3.x
+# MODEL_PATH_KERAS = 'best_model.keras'  # Preferred format for Keras 3.x
 MODEL_PATH_H5 = 'FINAL_MODEL.h5'        # Legacy format
 
 # Custom CSS
@@ -122,9 +123,9 @@ def load_model_safe():
                 
                 # Try downloading as .h5 first (since your current model is .h5)
                 try:
-                    gdown.download(url, MODEL_PATH_H5, quiet=False)
-                    model_path = MODEL_PATH_H5
-                    st.success(f"✅ Downloaded: {MODEL_PATH_H5}")
+                    gdown.download(url, MODEL_PATH_KERAS, quiet=False)
+                    model_path = MODEL_PATH_KERAS
+                    st.success(f"✅ Downloaded: {MODEL_PATH_KERAS}")
                 except Exception as e:
                     st.error(f"❌ Failed to download model: {str(e)}")
                     return None
