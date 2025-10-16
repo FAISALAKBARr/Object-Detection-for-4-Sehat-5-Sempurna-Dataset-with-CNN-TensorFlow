@@ -113,9 +113,9 @@ def load_model_safe():
             model_path = MODEL_PATH_KERAS
             st.info(f"✅ Found model: {MODEL_PATH_KERAS}")
         # Priority 2: Check for .h5 format
-        elif os.path.exists(MODEL_PATH_H5):
-            model_path = MODEL_PATH_H5
-            st.info(f"✅ Found model: {MODEL_PATH_H5}")
+        elif os.path.exists(MODEL_PATH_KERAS):
+            model_path = MODEL_PATH_KERAS
+            st.info(f"✅ Found model: {MODEL_PATH_KERAS}")
         else:
             # Download model from Google Drive
             with st.spinner('📥 Downloading model from Google Drive...'):
