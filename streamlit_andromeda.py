@@ -29,7 +29,7 @@ st.set_page_config(
 )
 
 # Model configuration - Support both .keras and .h5
-MODEL_ID = '1cSQp9fhgaMOlNqgxcJOrBIe7oaohrSE0'
+MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'
 # MODEL_PATH_KERAS = 'FINAL_MODEL_IMPROVED.keras'  # Preferred format for Keras 3.x
 MODEL_PATH_KERAS = 'best_model.keras'  # Preferred format for Keras 3.x
 MODEL_PATH_H5 = 'FINAL_MODEL.h5'        # Legacy format
