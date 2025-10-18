@@ -191,7 +191,7 @@ def load_model_safe():
         """)
         return None
 
-def preprocess_image(image, target_size=(224, 224)):
+def preprocess_image(image, target_size=(384, 384)):
     """
     Preprocess image for model prediction
     """
