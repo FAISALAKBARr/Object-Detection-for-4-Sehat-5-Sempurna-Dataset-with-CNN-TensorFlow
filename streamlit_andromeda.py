@@ -28,15 +28,14 @@ st.set_page_config(
     layout="wide"
 )
 
-# Model configuration - Support both .keras and .h5
-# RECOMMENDED: Use best_model (saved by ModelCheckpoint with highest val_acc)
-MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'  # Update this with your Google Drive file ID
+# ✅ FIXED: Model configuration - sesuaikan dengan IMG_SIZE di training (384)
+MODEL_ID = '1DgvF7-UyRx_Htjo8urj9Qx-XhkQgLWwl'
+IMG_SIZE = 384  # ✅ CRITICAL: Harus sama dengan IMG_SIZE saat training!
 
-# Priority order for model files:
-MODEL_PATH_BEST_KERAS = 'best_model.keras'      # ⭐ PRIORITY 1: Best validation accuracy
-MODEL_PATH_BEST_H5 = 'best_model.h5'            # ⭐ PRIORITY 2: Best model (legacy format)
-MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_NUTRITION.keras'   # PRIORITY 3: Last epoch (backup)
-MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_NUTRITION.h5'          # PRIORITY 4: Last epoch (legacy backup)
+MODEL_PATH_BEST_KERAS = 'best_model.keras'
+MODEL_PATH_BEST_H5 = 'best_model.h5'
+MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_NUTRITION.keras'
+MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_NUTRITION.h5'
 
 # Custom CSS
 st.markdown("""
@@ -109,23 +108,15 @@ def load_model_safe():
     try:
         tf = get_tensorflow()
         
-        # Check which format is available
         model_path = None
         
-        # Priority 1: Check for .keras format
         if os.path.exists(MODEL_PATH_BEST_KERAS):
             model_path = MODEL_PATH_BEST_KERAS
             st.info(f"✅ Found model: {MODEL_PATH_BEST_KERAS}")
-        # Priority 2: Check for .h5 format
-        # elif os.path.exists(MODEL_PATH_BEST_H5):
-        #     model_path = MODEL_PATH_BEST_H5
-        #     st.info(f"✅ Found model: {MODEL_PATH_BEST_H5}")
         else:
-            # Download model from Google Drive
             with st.spinner('📥 Downloading model from Google Drive...'):
                 url = f'https://drive.google.com/uc?id={MODEL_ID}'
                 
-                # Try downloading as .h5 first (since your current model is .h5)
                 try:
                     gdown.download(url, MODEL_PATH_BEST_KERAS, quiet=False)
                     model_path = MODEL_PATH_BEST_KERAS
@@ -138,45 +129,25 @@ def load_model_safe():
             st.error("❌ No model file found!")
             return None
         
-        # Load the model
         with st.spinner(f'🔄 Loading model from {model_path}...'):
             try:
-                # Try loading with compile=False first (safer)
                 model = tf.keras.models.load_model(model_path, compile=False)
                 
-                # Recompile the model
                 model.compile(
                     optimizer='adam',
                     loss='categorical_crossentropy',
                     metrics=['accuracy']
                 )
                 
-                st.success(f"✅ Model loaded successfully from {model_path}")
+                # ✅ VALIDATION: Cek input shape model
+                input_shape = model.input_shape
+                st.success(f"✅ Model loaded successfully!")
+                st.info(f"📐 Model Input Shape: {input_shape}")
                 
             except Exception as load_error:
                 st.error(f"❌ Error loading model: {str(load_error)}")
-                
-                # Try alternative loading method for .h5 files
-                if model_path.endswith('.h5'):
-                    try:
-                        st.warning("⚠️ Trying alternative loading method for .h5 file...")
-                        model = tf.keras.models.load_model(
-                            model_path,
-                            compile=False
-                        )
-                        model.compile(
-                            optimizer='adam',
-                            loss='categorical_crossentropy',
-                            metrics=['accuracy']
-                        )
-                        st.success("✅ Model loaded with alternative method")
-                    except Exception as e2:
-                        st.error(f"❌ Alternative method also failed: {str(e2)}")
-                        return None
-                else:
-                    return None
+                return None
         
-        # Cleanup
         gc.collect()
         return model
         
@@ -191,7 +162,7 @@ def load_model_safe():
         """)
         return None
 
-def preprocess_image(image, target_size=(384, 384)):
+def preprocess_image(image, target_size=(IMG_SIZE, IMG_SIZE)):  # ✅ FIXED: Gunakan IMG_SIZE dari config
     """
     Preprocess image for model prediction
     """
@@ -347,7 +318,7 @@ def main():
                 
                 if uploaded_file is not None:
                     image = Image.open(uploaded_file)
-                    st.image(image, caption='Gambar yang diunggah', use_container_width=True)
+                    st.image(image, caption='Gambar yang diunggah', width='stretch')  # ✅ FIXED
                     
                     if st.button('GO!'):
                         with st.spinner('Sedang menganalisis gambar...'):
@@ -358,7 +329,7 @@ def main():
                                     st.write("### Hasil Analisis")
                                     st.image(result['output_image'],
                                            caption='Hasil Deteksi',
-                                           use_container_width=True)
+                                           width='stretch')  # ✅ FIXED
                                     
                                     st.write("#### Objek Terdeteksi:")
                                     for idx, obj in enumerate(result['detected_objects'], 1):
@@ -377,28 +348,22 @@ def main():
             col1, col2 = st.columns([2, 1])
             
             with col1:
-                # Camera input dari Streamlit
                 camera_image = st.camera_input("Ambil foto untuk deteksi makanan")
                 
                 if camera_image is not None:
-                    # Convert uploaded image to PIL
                     image = Image.open(camera_image)
-                    
-                    # Placeholder untuk hasil
                     result_placeholder = st.empty()
                     
                     with st.spinner('🔍 Menganalisis gambar...'):
                         result = predict_image(image, model)
                         
                         if result:
-                            # Tampilkan hasil deteksi
                             result_placeholder.image(
                                 result['output_image'],
                                 caption='Hasil Deteksi Real-time',
-                                use_container_width=True
+                                width='stretch'  # ✅ FIXED
                             )
                             
-                            # Tampilkan informasi deteksi
                             if result['detected_objects']:
                                 st.success(f"✅ Terdeteksi: **{result['class'].upper()}** ({result['confidence']:.2f}%)")
                                 
@@ -409,7 +374,6 @@ def main():
                             else:
                                 st.warning("⚠️ Tidak ada objek terdeteksi dengan confidence tinggi")
                             
-                            # Tampilkan probabilitas
                             with st.expander("📈 Distribusi Probabilitas"):
                                 for class_name, prob in result['all_probabilities'].items():
                                     st.write(f"{class_name.title()}: {prob:.2f}%")
@@ -445,11 +409,11 @@ def main():
                 - Gunakan browser Chrome/Firefox untuk hasil terbaik
                 """)
                 
-                # Status info
                 st.divider()
                 st.markdown("### 📊 Status Sistem")
                 status_data = {
                     "Model": "✅ Loaded",
+                    "Input Size": f"📐 {IMG_SIZE}x{IMG_SIZE}",
                     "Camera": "🟢 Ready",
                     "Detection": "🟢 Active"
                 }
@@ -483,7 +447,6 @@ def main():
         st.sidebar.divider()
         st.sidebar.markdown("### 📈 Model Info")
         
-        # Detect model format being used
         if os.path.exists(MODEL_PATH_BEST_KERAS):
             model_format = "Keras 3.x (.keras)"
         elif os.path.exists(MODEL_PATH_BEST_H5):
@@ -492,8 +455,8 @@ def main():
             model_format = "Unknown"
             
         st.sidebar.info(f"""
-        **Arsitektur:** CNN\n
-        **Input Size:** 224x224\n
+        **Arsitektur:** Custom SPP CNN\n
+        **Input Size:** {IMG_SIZE}x{IMG_SIZE}\n
         **Classes:** 5\n
         **Framework:** TensorFlow\n
         **Format:** {model_format}
