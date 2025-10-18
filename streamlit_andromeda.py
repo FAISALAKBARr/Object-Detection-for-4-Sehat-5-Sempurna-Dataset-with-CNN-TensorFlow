@@ -127,9 +127,9 @@ def load_model_safe():
                 
                 # Try downloading as .h5 first (since your current model is .h5)
                 try:
-                    gdown.download(url, MODEL_PATH_BEST_H5, quiet=False)
-                    model_path = MODEL_PATH_BEST_H5
-                    st.success(f"✅ Downloaded: {MODEL_PATH_BEST_H5}")
+                    gdown.download(url, MODEL_PATH_BEST_KERAS, quiet=False)
+                    model_path = MODEL_PATH_BEST_KERAS
+                    st.success(f"✅ Downloaded: {MODEL_PATH_BEST_KERAS}")
                 except Exception as e:
                     st.error(f"❌ Failed to download model: {str(e)}")
                     return None
