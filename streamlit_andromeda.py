@@ -29,7 +29,7 @@ st.set_page_config(
 )
 
 # ✅ FIXED: Model configuration - sesuaikan dengan IMG_SIZE di training (384)
-MODEL_ID = '1OK7EjfiZxcW5igjr3TjkmgbApCn_dvEp'
+MODEL_ID = '1cSQp9fhgaMOlNqgxcJOrBIe7oaohrSE0'
 IMG_SIZE = 384  # ✅ CRITICAL: Harus sama dengan IMG_SIZE saat training!
 
 MODEL_PATH_BEST_KERAS = 'best_model.keras'
