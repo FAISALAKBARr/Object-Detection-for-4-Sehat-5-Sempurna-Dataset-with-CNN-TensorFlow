@@ -29,10 +29,10 @@ st.set_page_config(
 )
 
 # ✅ FIXED: Model configuration - sesuaikan dengan IMG_SIZE di training (384)
-MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'
+MODEL_ID = '1W6DDGb6ITEMkY-0Szymyhy6kVos7UYXl'
 IMG_SIZE = 384  # ✅ CRITICAL: Harus sama dengan IMG_SIZE saat training!
 
-MODEL_PATH_BEST_KERAS = 'best_model.keras'
+MODEL_PATH_BEST_KERAS = 'FINAL_MODEL_IMPROVED.keras'
 MODEL_PATH_BEST_H5 = 'best_model.h5'
 MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_NUTRITION.keras'
 MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_NUTRITION.h5'
