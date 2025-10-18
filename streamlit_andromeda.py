@@ -30,7 +30,7 @@ st.set_page_config(
 
 # Model configuration - Support both .keras and .h5
 # RECOMMENDED: Use best_model (saved by ModelCheckpoint with highest val_acc)
-MODEL_ID = '1DgvF7-UyRx_Htjo8urj9Qx-XhkQgLWwl'  # Update this with your Google Drive file ID
+MODEL_ID = '1DTbji3Y-JJarXD22YHCtsMWhYWcvHi5F'  # Update this with your Google Drive file ID
 
 # Priority order for model files:
 MODEL_PATH_BEST_KERAS = 'best_model.keras'      # ⭐ PRIORITY 1: Best validation accuracy
