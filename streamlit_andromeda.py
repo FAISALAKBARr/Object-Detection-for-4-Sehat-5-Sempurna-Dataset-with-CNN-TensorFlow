@@ -35,8 +35,8 @@ MODEL_ID = '1DgvF7-UyRx_Htjo8urj9Qx-XhkQgLWwl'  # Update this with your Google D
 # Priority order for model files:
 MODEL_PATH_BEST_KERAS = 'best_model.keras'      # ⭐ PRIORITY 1: Best validation accuracy
 MODEL_PATH_BEST_H5 = 'best_model.h5'            # ⭐ PRIORITY 2: Best model (legacy format)
-MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_IMPROVED.keras'   # PRIORITY 3: Last epoch (backup)
-MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_IMPROVED.h5'          # PRIORITY 4: Last epoch (legacy backup)
+MODEL_PATH_FINAL_KERAS = 'FINAL_MODEL_NUTRITION.keras'   # PRIORITY 3: Last epoch (backup)
+MODEL_PATH_FINAL_H5 = 'FINAL_MODEL_NUTRITION.h5'          # PRIORITY 4: Last epoch (legacy backup)
 
 # Custom CSS
 st.markdown("""
