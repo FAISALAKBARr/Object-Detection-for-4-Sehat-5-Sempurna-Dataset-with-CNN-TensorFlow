@@ -515,7 +515,7 @@ st.set_page_config(
 MODEL_ID = '1DgvF7-UyRx_Htjo8urj9Qx-XhkQgLWwl'  # ⭐ Update this after training!
 MODEL_PATH = 'best_model.keras'
 CONFIG_PATH = 'model_config.json'
-IMG_SIZE = 300  # Must match training
+IMG_SIZE = 384  # Must match training
 
 # CSS
 st.markdown("""
@@ -559,7 +559,7 @@ def load_config():
     default_config = {
         'class_names': ['buah', 'karbohidrat', 'minuman', 'protein', 'sayur'],
         'num_classes': 5,
-        'img_size': 300,
+        'img_size': 384,
         'threshold': 0.5,
         'nutrition_balance_formula': {
             'balanced_threshold': 5,
