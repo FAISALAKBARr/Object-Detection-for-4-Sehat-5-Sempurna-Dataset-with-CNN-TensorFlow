@@ -28,7 +28,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# ✅ FIXED: Model configuration - sesuaikan dengan IMG_SIZE di training (384)
+# ✅ FIXED: Model configuration - sesuaikan dengan IMG_SIZE di training (224)
 MODEL_ID = '1WrLhkQkmTpmZIgw0ZGbb6E6zmWzWWiO3'
 IMG_SIZE = 224  # ✅ CRITICAL: Harus sama dengan IMG_SIZE saat training!
 
