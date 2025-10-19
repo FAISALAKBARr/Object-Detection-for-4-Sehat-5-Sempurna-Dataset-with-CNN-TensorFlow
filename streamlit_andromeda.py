@@ -142,7 +142,7 @@ def load_model_safe():
                 # ✅ VALIDATION: Cek input shape model
                 input_shape = model.input_shape
                 st.success(f"✅ Model loaded successfully!")
-                st.info(f"📐 Model Input Shape: {input_shape}")
+                st.info(f"🔍 Model Input Shape: {input_shape}")
                 
             except Exception as load_error:
                 st.error(f"❌ Error loading model: {str(load_error)}")
@@ -318,7 +318,7 @@ def main():
                 
                 if uploaded_file is not None:
                     image = Image.open(uploaded_file)
-                    st.image(image, caption='Gambar yang diunggah', width='stretch')  # ✅ FIXED
+                    st.image(image, caption='Gambar yang diunggah', use_container_width=True)  # ✅ FIXED
                     
                     if st.button('GO!'):
                         with st.spinner('Sedang menganalisis gambar...'):
@@ -329,7 +329,7 @@ def main():
                                     st.write("### Hasil Analisis")
                                     st.image(result['output_image'],
                                            caption='Hasil Deteksi',
-                                           width='stretch')  # ✅ FIXED
+                                           use_container_width=True)  # ✅ FIXED
                                     
                                     st.write("#### Objek Terdeteksi:")
                                     for idx, obj in enumerate(result['detected_objects'], 1):
@@ -361,7 +361,7 @@ def main():
                             result_placeholder.image(
                                 result['output_image'],
                                 caption='Hasil Deteksi Real-time',
-                                width='stretch'  # ✅ FIXED
+                                use_container_width=True  # ✅ FIXED
                             )
                             
                             if result['detected_objects']:
@@ -413,7 +413,7 @@ def main():
                 st.markdown("### 📊 Status Sistem")
                 status_data = {
                     "Model": "✅ Loaded",
-                    "Input Size": f"📐 {IMG_SIZE}x{IMG_SIZE}",
+                    "Input Size": f"🔍 {IMG_SIZE} × {IMG_SIZE}",
                     "Camera": "🟢 Ready",
                     "Detection": "🟢 Active"
                 }
@@ -453,14 +453,20 @@ def main():
             model_format = "Legacy (.h5)"
         else:
             model_format = "Unknown"
-            
-        st.sidebar.info(f"""
-        **Arsitektur:** Custom SPP CNN\n
-        **Input Size:** {IMG_SIZE}x{IMG_SIZE}\n
-        **Classes:** 5\n
-        **Framework:** TensorFlow\n
-        **Format:** {model_format}
-        """)
+        
+        # ✅ FIXED: Menghindari regex error dengan memisahkan string
+        model_info_text = f"""
+**Arsitektur:** Custom SPP CNN
+
+**Input Size:** {IMG_SIZE} × {IMG_SIZE} pixels
+
+**Classes:** 5
+
+**Framework:** TensorFlow
+
+**Format:** {model_format}
+"""
+        st.sidebar.info(model_info_text)
         
         # Footer
         st.divider()
@@ -485,532 +491,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# import os
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-# os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
-
-# import streamlit as st
-# import numpy as np
-# import cv2
-# from PIL import Image
-# import gdown
-# import json
-# import gc
-
-# # Lazy import tensorflow
-# @st.cache_resource
-# def get_tensorflow():
-#     import tensorflow as tf
-#     tf.config.set_visible_devices([], 'GPU')
-#     return tf
-
-# st.set_page_config(
-#     page_title="SmartPlate - Nutrition Balance Detector",
-#     page_icon="🍽️",
-#     layout="wide"
-# )
-
-# # Model configuration
-# MODEL_ID = '1DgvF7-UyRx_Htjo8urj9Qx-XhkQgLWwl'  # ⭐ Update this after training!
-# MODEL_PATH = 'best_model.keras'
-# CONFIG_PATH = 'model_config.json'
-# IMG_SIZE = 300  # Must match training
-
-# # CSS
-# st.markdown("""
-#     <style>
-#     .main {padding: 20px;}
-#     .stButton>button {
-#         width: 100%;
-#         background-color: #0245d6;
-#         color: white;
-#         border-radius: 10px;
-#         padding: 10px;
-#         font-weight: bold;
-#     }
-#     .balance-card {
-#         padding: 20px;
-#         border-radius: 10px;
-#         border: 2px solid #4CAF50;
-#         margin: 10px 0;
-#         background-color: #f0f9f0;
-#     }
-#     .unbalanced-card {
-#         padding: 20px;
-#         border-radius: 10px;
-#         border: 2px solid #ff5252;
-#         margin: 10px 0;
-#         background-color: #fff0f0;
-#     }
-#     .food-badge {
-#         display: inline-block;
-#         padding: 5px 15px;
-#         border-radius: 20px;
-#         margin: 5px;
-#         font-weight: bold;
-#     }
-#     </style>
-# """, unsafe_allow_html=True)
-
-# # Load configuration
-# @st.cache_data
-# def load_config():
-#     default_config = {
-#         'class_names': ['buah', 'karbohidrat', 'minuman', 'protein', 'sayur'],
-#         'num_classes': 5,
-#         'img_size': 300,
-#         'threshold': 0.5,
-#         'nutrition_balance_formula': {
-#             'balanced_threshold': 5,
-#             'classes': {
-#                 'buah': 'Vitamin & Fiber',
-#                 'karbohidrat': 'Energy Source',
-#                 'minuman': 'Hydration',
-#                 'protein': 'Body Building',
-#                 'sayur': 'Minerals & Fiber'
-#             }
-#         }
-#     }
-    
-#     if os.path.exists(CONFIG_PATH):
-#         try:
-#             with open(CONFIG_PATH, 'r') as f:
-#                 return json.load(f)
-#         except:
-#             return default_config
-#     return default_config
-
-# config = load_config()
-# CLASS_NAMES = config['class_names']
-# THRESHOLD = config['threshold']
-
-# # Class icons
-# CLASS_ICONS = {
-#     'buah': '🍎',
-#     'karbohidrat': '🍚',
-#     'minuman': '🥤',
-#     'protein': '🍖',
-#     'sayur': '🥬'
-# }
-
-# # Load model
-# @st.cache_resource
-# def load_model_safe():
-#     try:
-#         tf = get_tensorflow()
-        
-#         if not os.path.exists(MODEL_PATH):
-#             with st.spinner('📥 Downloading model from Google Drive...'):
-#                 url = f'https://drive.google.com/uc?id={MODEL_ID}'
-#                 gdown.download(url, MODEL_PATH, quiet=False)
-#                 st.success("✅ Model downloaded!")
-        
-#         with st.spinner('🔄 Loading model...'):
-#             model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-#             model.compile(
-#                 optimizer='adam',
-#                 loss='binary_crossentropy',
-#                 metrics=['binary_accuracy']
-#             )
-        
-#         st.success("✅ Model loaded successfully!")
-#         gc.collect()
-#         return model
-        
-#     except Exception as e:
-#         st.error(f"❌ Error loading model: {str(e)}")
-#         st.info("""
-#         **Troubleshooting:**
-#         1. Pastikan MODEL_ID sudah diupdate
-#         2. Model file harus format .keras (Keras 3.x)
-#         3. Check Google Drive sharing permissions
-#         """)
-#         return None
-
-# # Grad-CAM function
-# def make_gradcam_heatmap(img_array, model, class_index):
-#     """Generate Grad-CAM heatmap"""
-#     try:
-#         tf = get_tensorflow()
-        
-#         # Find last conv layer
-#         last_conv_layer_name = None
-#         for layer in reversed(model.layers):
-#             if len(layer.output_shape) == 4:  # Conv layer
-#                 last_conv_layer_name = layer.name
-#                 break
-        
-#         if last_conv_layer_name is None:
-#             return None
-        
-#         # Create grad model
-#         grad_model = tf.keras.models.Model(
-#             [model.inputs],
-#             [model.get_layer(last_conv_layer_name).output, model.output]
-#         )
-        
-#         with tf.GradientTape() as tape:
-#             conv_outputs, predictions = grad_model(img_array)
-#             class_channel = predictions[:, class_index]
-        
-#         grads = tape.gradient(class_channel, conv_outputs)
-#         pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-        
-#         conv_outputs = conv_outputs[0]
-#         heatmap = conv_outputs @ pooled_grads[..., tf.newaxis]
-#         heatmap = tf.squeeze(heatmap)
-#         heatmap = tf.maximum(heatmap, 0) / tf.math.reduce_max(heatmap)
-        
-#         return heatmap.numpy()
-#     except Exception as e:
-#         st.warning(f"Grad-CAM generation failed: {str(e)}")
-#         return None
-
-# # Preprocess image
-# def preprocess_image(image):
-#     if isinstance(image, np.ndarray):
-#         if len(image.shape) == 3 and image.shape[2] == 3:
-#             image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-#         original = image.copy()
-#         image = Image.fromarray(image)
-#     else:
-#         original = np.array(image)
-    
-#     image = image.resize((IMG_SIZE, IMG_SIZE))
-#     img_array = np.array(image) / 255.0
-#     img_array = np.expand_dims(img_array, 0)
-    
-#     return img_array, original
-
-# # Predict multi-label
-# def predict_multilabel(image, model):
-#     try:
-#         processed_image, original_image = preprocess_image(image)
-        
-#         # Multi-label predictions (sigmoid output)
-#         predictions = model.predict(processed_image, verbose=0)[0]
-        
-#         # Detect classes above threshold
-#         detected_classes = []
-#         for i, prob in enumerate(predictions):
-#             if prob >= THRESHOLD:
-#                 detected_classes.append({
-#                     'class': CLASS_NAMES[i],
-#                     'confidence': float(prob) * 100,
-#                     'index': i,
-#                     'icon': CLASS_ICONS[CLASS_NAMES[i]]
-#                 })
-        
-#         # Sort by confidence
-#         detected_classes.sort(key=lambda x: x['confidence'], reverse=True)
-        
-#         # Calculate nutrition balance
-#         num_detected = len(detected_classes)
-#         is_balanced = num_detected >= 4  # At least 4 out of 5
-#         balance_percentage = (num_detected / len(CLASS_NAMES)) * 100
-        
-#         # Generate Grad-CAM for each detected class
-#         gradcam_visualizations = []
-#         for det in detected_classes:
-#             heatmap = make_gradcam_heatmap(processed_image, model, det['index'])
-#             if heatmap is not None:
-#                 # Resize heatmap to original image size
-#                 h, w = original_image.shape[:2]
-#                 heatmap_resized = cv2.resize(heatmap, (w, h))
-                
-#                 # Create heatmap overlay
-#                 heatmap_colored = cv2.applyColorMap(
-#                     np.uint8(255 * heatmap_resized), 
-#                     cv2.COLORMAP_JET
-#                 )
-                
-#                 # Superimpose
-#                 superimposed = cv2.addWeighted(
-#                     original_image, 0.6,
-#                     heatmap_colored, 0.4,
-#                     0
-#                 )
-                
-#                 gradcam_visualizations.append({
-#                     'class': det['class'],
-#                     'image': superimposed,
-#                     'confidence': det['confidence'],
-#                     'icon': det['icon']
-#                 })
-        
-#         return {
-#             'predictions': predictions,
-#             'detected_classes': detected_classes,
-#             'is_balanced': is_balanced,
-#             'balance_percentage': balance_percentage,
-#             'num_detected': num_detected,
-#             'gradcam_viz': gradcam_visualizations,
-#             'original_image': original_image
-#         }
-        
-#     except Exception as e:
-#         st.error(f"❌ Error during prediction: {str(e)}")
-#         return None
-
-# # Main app
-# def main():
-#     st.title("🍽️ SmartPlate - Nutrition Balance Detector")
-#     st.write("**Multi-food Detection + 4 Sehat 5 Sempurna Analysis**")
-    
-#     # Load model
-#     model = load_model_safe()
-#     if model is None:
-#         st.error("❌ Failed to load model. Please check configuration.")
-#         st.stop()
-    
-#     # Tabs
-#     tab1, tab2, tab3 = st.tabs(["🏠 Home", "📤 Upload Image", "📸 Camera"])
-    
-#     with tab1:
-#         st.header("About SmartPlate")
-        
-#         col_info1, col_info2 = st.columns(2)
-        
-#         with col_info1:
-#             st.write("""
-#             **SmartPlate** adalah sistem cerdas untuk mendeteksi keseimbangan gizi pada makanan 
-#             berdasarkan prinsip **4 Sehat 5 Sempurna** Indonesia.
-            
-#             ### 🎯 Fitur Utama:
-#             - **Multi-food Detection** - Deteksi semua makanan dalam 1 gambar
-#             - **Grad-CAM Visualization** - Tampilkan lokasi setiap makanan
-#             - **Balance Analysis** - Analisis keseimbangan gizi otomatis
-#             - **Real-time Camera** - Deteksi langsung dari kamera
-            
-#             ### 🔬 Teknologi:
-#             - Deep Learning (EfficientNet)
-#             - Multi-label Classification
-#             - Grad-CAM untuk visualization
-#             """)
-        
-#         with col_info2:
-#             st.write("""
-#             ### 📊 5 Kategori Gizi:
-#             """)
-            
-#             for class_name, icon in CLASS_ICONS.items():
-#                 nutrition = config['nutrition_balance_formula']['classes'][class_name]
-#                 st.markdown(f"""
-#                 <div style="padding: 10px; background-color: #f0f0f0; border-radius: 8px; margin: 5px 0;">
-#                     {icon} <strong>{class_name.title()}</strong><br/>
-#                     <small>{nutrition}</small>
-#                 </div>
-#                 """, unsafe_allow_html=True)
-            
-#             st.write("""
-#             ### ⚖️ Kriteria Seimbang:
-#             - ✅ **Sangat Seimbang**: 5/5 kategori terdeteksi
-#             - ✅ **Seimbang**: 4/5 kategori terdeteksi
-#             - ⚠️ **Kurang Seimbang**: ≤3 kategori terdeteksi
-#             """)
-        
-#         st.divider()
-        
-#         if st.button("📖 Lihat Dataset Lengkap"):
-#             st.info("📊 Dataset: 5000 images, 5 classes (balanced)")
-#             st.markdown("""
-#             - Train: 3500 images (700/class)
-#             - Validation: 750 images (150/class)
-#             - Test: 750 images (150/class)
-            
-#             [🔗 Kaggle Dataset](https://www.kaggle.com/datasets/andromedagroup05/data-4-sehat-5-sempurna/data)
-#             """)
-    
-#     with tab2:
-#         col1, col2 = st.columns([1, 1])
-        
-#         with col1:
-#             st.write("### 📤 Upload Gambar Makanan")
-#             uploaded_file = st.file_uploader(
-#                 "Pilih gambar (JPG, JPEG, PNG)...",
-#                 type=['jpg', 'jpeg', 'png']
-#             )
-            
-#             if uploaded_file:
-#                 image = Image.open(uploaded_file)
-#                 st.image(image, caption='📷 Gambar Original', use_container_width=True)
-                
-#                 if st.button('🔍 Analisis Keseimbangan Gizi', key='upload_analyze'):
-#                     with st.spinner('🤖 AI sedang menganalisis...'):
-#                         result = predict_multilabel(image, model)
-                        
-#                         if result:
-#                             # Store result in session state
-#                             st.session_state['result'] = result
-        
-#         # Display results if available
-#         if 'result' in st.session_state:
-#             result = st.session_state['result']
-            
-#             with col2:
-#                 st.write("### 📊 Hasil Analisis")
-                
-#                 # Balance status card
-#                 if result['is_balanced']:
-#                     st.markdown(f"""
-#                     <div class="balance-card">
-#                         <h3>✅ GIZI SEIMBANG!</h3>
-#                         <p style="font-size: 20px; margin: 0;">
-#                             <strong>{result['num_detected']}/5</strong> kategori terdeteksi
-#                         </p>
-#                         <p style="margin: 5px 0;">Keseimbangan: <strong>{result['balance_percentage']:.0f}%</strong></p>
-#                     </div>
-#                     """, unsafe_allow_html=True)
-#                 else:
-#                     st.markdown(f"""
-#                     <div class="unbalanced-card">
-#                         <h3>⚠️ KURANG SEIMBANG</h3>
-#                         <p style="font-size: 20px; margin: 0;">
-#                             <strong>{result['num_detected']}/5</strong> kategori terdeteksi
-#                         </p>
-#                         <p style="margin: 5px 0;">Keseimbangan: <strong>{result['balance_percentage']:.0f}%</strong></p>
-#                         <p style="margin: 5px 0; font-size: 14px;">
-#                             💡 Tambahkan makanan dari kategori yang belum ada
-#                         </p>
-#                     </div>
-#                     """, unsafe_allow_html=True)
-                
-#                 # Detected foods
-#                 st.write("#### 🍽️ Makanan Terdeteksi:")
-                
-#                 if result['detected_classes']:
-#                     for det in result['detected_classes']:
-#                         st.markdown(f"""
-#                         <div style="padding: 10px; background-color: #e8f5e9; 
-#                              border-left: 4px solid #4CAF50; margin: 5px 0; border-radius: 5px;">
-#                             {det['icon']} <strong>{det['class'].title()}</strong>
-#                             <span style="float: right; color: #4CAF50;">
-#                                 {det['confidence']:.1f}%
-#                             </span>
-#                         </div>
-#                         """, unsafe_allow_html=True)
-#                 else:
-#                     st.warning("Tidak ada makanan terdeteksi dengan confidence tinggi.")
-                
-#                 # Missing categories
-#                 detected_names = [d['class'] for d in result['detected_classes']]
-#                 missing = [c for c in CLASS_NAMES if c not in detected_names]
-                
-#                 if missing:
-#                     st.write("#### ❌ Kategori yang Belum Ada:")
-#                     for cat in missing:
-#                         st.markdown(f"""
-#                         <div style="padding: 8px; background-color: #ffebee; 
-#                              border-left: 4px solid #f44336; margin: 5px 0; border-radius: 5px;">
-#                             {CLASS_ICONS[cat]} {cat.title()}
-#                         </div>
-#                         """, unsafe_allow_html=True)
-            
-#             # Grad-CAM Visualizations
-#             if result['gradcam_viz']:
-#                 st.write("### 🗺️ Grad-CAM Visualization (Lokasi Makanan)")
-#                 st.write("*Heatmap menunjukkan di mana AI mendeteksi setiap jenis makanan*")
-                
-#                 # Display in grid
-#                 num_detected = len(result['gradcam_viz'])
-#                 cols_per_row = min(3, num_detected)
-                
-#                 for i in range(0, num_detected, cols_per_row):
-#                     cols = st.columns(cols_per_row)
-#                     for j, col in enumerate(cols):
-#                         idx = i + j
-#                         if idx < num_detected:
-#                             viz = result['gradcam_viz'][idx]
-#                             with col:
-#                                 st.image(
-#                                     viz['image'],
-#                                     caption=f"{viz['icon']} {viz['class'].title()} ({viz['confidence']:.1f}%)",
-#                                     use_container_width=True
-#                                 )
-    
-#     with tab3:
-#         st.write("### 📸 Real-time Camera Detection")
-#         st.info("💡 Gunakan kamera untuk deteksi langsung")
-        
-#         col_cam1, col_cam2 = st.columns([2, 1])
-        
-#         with col_cam1:
-#             camera_image = st.camera_input("📷 Ambil foto makanan")
-            
-#             if camera_image:
-#                 image = Image.open(camera_image)
-                
-#                 if st.button('🔍 Analisis Gizi', key='camera_analyze'):
-#                     with st.spinner('🤖 Menganalisis...'):
-#                         result = predict_multilabel(image, model)
-                        
-#                         if result:
-#                             st.session_state['camera_result'] = result
-        
-#         # Display camera results
-#         if 'camera_result' in st.session_state:
-#             result = st.session_state['camera_result']
-            
-#             with col_cam2:
-#                 # Balance indicator
-#                 if result['is_balanced']:
-#                     st.success(f"✅ Seimbang ({result['num_detected']}/5)")
-#                 else:
-#                     st.warning(f"⚠️ Kurang ({result['num_detected']}/5)")
-                
-#                 # Quick summary
-#                 st.write("**Terdeteksi:**")
-#                 for det in result['detected_classes']:
-#                     st.write(f"{det['icon']} {det['class'].title()} - {det['confidence']:.1f}%")
-                
-#                 # Show missing
-#                 detected_names = [d['class'] for d in result['detected_classes']]
-#                 missing = [c for c in CLASS_NAMES if c not in detected_names]
-                
-#                 if missing:
-#                     st.write("**Belum ada:**")
-#                     for cat in missing:
-#                         st.write(f"{CLASS_ICONS[cat]} {cat.title()}")
-    
-#     # Sidebar
-#     st.sidebar.title("ℹ️ Info Sistem")
-#     st.sidebar.write(f"""
-#     **Model:** EfficientNetB3  
-#     **Type:** Multi-label Classification  
-#     **Input Size:** {IMG_SIZE}x{IMG_SIZE}  
-#     **Classes:** {len(CLASS_NAMES)}  
-#     **Threshold:** {THRESHOLD}
-    
-#     **Status:** {'✅ Ready' if model else '❌ Not Ready'}
-#     """)
-    
-#     st.sidebar.divider()
-    
-#     st.sidebar.markdown("""
-#     ### 🎯 Akurasi Model
-#     - Binary Accuracy: ~75-80%
-#     - Hamming Loss: <0.15
-#     - Multi-label: Supported ✅
-    
-#     ### 🔬 Teknologi
-#     - TensorFlow/Keras 3.x
-#     - EfficientNetB3
-#     - Grad-CAM Visualization
-#     - Multi-label Classification
-#     """)
-    
-#     # Footer
-#     st.divider()
-#     st.markdown("""
-#     <p style='text-align: center; color: #666;'>
-#         © 2024 Andromeda Team | Final Project - AI Track, Startup Campus<br/>
-#         <a href='https://github.com/FAISALAKBARr/Object-Detection-for-4-Sehat-5-Sempurna-Dataset-with-CNN-TensorFlow.git' 
-#            target='_blank'>
-#             <img src='https://img.shields.io/badge/GitHub-Repository-black?style=flat&logo=github'/>
-#         </a>
-#     </p>
-#     """, unsafe_allow_html=True)
-
-# if __name__ == '__main__':
-#     main()
